@@ -1253,11 +1253,14 @@
             user-select: none;
             -webkit-user-select: none;
             z-index: 2;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px -8px rgba(0,0,0,0.5);
         }
         .w7-marca-agua-login img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             opacity: 0.9;
         }
     </style>
@@ -1303,7 +1306,7 @@
     <div id="screen-login" class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 p-5">
         <!-- Selo "W7 Soluções em Tecnologia" - canto inferior direito, tamanho proporcional à tela -->
         <div class="w7-marca-agua-login" aria-hidden="true">
-            <img src="w7-marca-dagua.png" alt="">
+            <img src="logo-nexo-selo.png" alt="NEXO">
         </div>
         <div class="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 w-full max-w-[300px] sm:max-w-md border border-blue-700/50 shadow-2xl">
             <div class="text-center mb-4 sm:mb-7">
@@ -1357,7 +1360,7 @@
     <div id="screen-auth" style="display: none;" class="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-5 overflow-y-auto">
         <!-- Selo "W7 Soluções em Tecnologia" - canto inferior direito, tamanho proporcional à tela -->
         <div class="w7-marca-agua-login" aria-hidden="true">
-            <img src="w7-marca-dagua.png" alt="">
+            <img src="logo-nexo-selo.png" alt="NEXO">
         </div>
         <div class="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 w-full max-w-md border border-blue-700/50 shadow-2xl my-6 sm:my-10">
             <div class="text-center mb-4 sm:mb-7">
@@ -1393,7 +1396,10 @@
     </div>
 
     <!-- MODAL LOGIN ADMIN -->
-    <div id="modal-proprietario" class="fixed inset-0 z-50 bg-[#13223a]/98 hidden items-center justify-center p-4 backdrop-blur-md">
+    <div id="modal-proprietario" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:#051a3e;">
+        <div class="w7-marca-agua-login" aria-hidden="true">
+            <img src="logo-nexo-selo-branco.png" alt="NEXO">
+        </div>
         <div class="glass-card-solid rounded-2xl p-6 w-full max-w-sm border border-blue-700/60 shadow-2xl">
             <div class="flex flex-col items-center mb-4"><i class="fas fa-crown text-3xl text-blue-500 mb-2"></i><h3 class="text-xl font-bold text-blue-500">Área Restrita</h3></div>
             <div class="mt-4 border-t border-white/15 pt-4"><button onclick="abrirLoginAdmin()" class="w-full btn-red-czk py-2.5 rounded-xl font-semibold">NEXO ADMIN</button></div>
@@ -1535,10 +1541,14 @@
 
     <!-- PAINEL ADMIN -->
     <div id="admin-panel" class="fixed inset-0 z-50 bg-[#101a2c] overflow-y-auto hidden p-5">
+        <!-- Logo NEXO: badge fixo no canto superior esquerdo, encostada nas bordas da tela
+             (por isso a posição é absoluta e ignora o padding do painel), igual à referência. -->
+        <div class="admin-panel-logo-badge" style="position:absolute; top:0; left:0; width:104px; height:92px; background:#fffdf6; border:1px solid rgba(16,26,44,0.14); border-bottom-right-radius:16px; box-shadow:0 10px 24px -10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:10; padding:8px;">
+            <img src="logo-nexo.png" alt="NEXO" style="height:64px; width:auto;">
+        </div>
         <div class="max-w-6xl mx-auto">
-            <div id="admin-panel-header" class="flex justify-between items-center border-b border-blue-800/40 pb-4 mb-7 flex-wrap gap-4">
+            <div id="admin-panel-header" class="flex justify-between items-center border-b border-blue-800/40 pb-4 mb-7 flex-wrap gap-4" style="padding-left:120px;">
                 <div class="flex items-center gap-3 flex-wrap">
-                    <img src="logo-nexo.png" alt="NEXO" class="h-12 w-auto shrink-0">
                     <i class="fas fa-sliders-h text-blue-500 text-2xl"></i>
                     <h2 class="text-2xl font-bold tracking-tight text-white">Painel de Controle</h2>
                     <button id="btn-toggle-loja" onclick="toggleLojaAbertaRapido()" class="ml-1 flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border transition"><i class="fas fa-circle text-[8px]"></i> <span id="btn-toggle-loja-texto">ABERTO</span></button>
@@ -13992,7 +14002,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 document.getElementById("senha-admin-new").value = "";
             } else czkAlert("Login ou senha incorretos!"); 
         }
-        function fecharAdmin() { document.getElementById("admin-panel").style.display = "none"; adminLogado = false; devLogado = false; czkLimparSessao(); document.getElementById("btn-tab-dev").style.display = "none"; atualizarBolinhaSuporte(); atualizarBolinhaEntregador(); }
+        function fecharAdmin() { document.getElementById("admin-panel").style.display = "none"; adminLogado = false; devLogado = false; czkLimparSessao(); document.getElementById("btn-tab-dev").style.display = "none"; atualizarBolinhaSuporte(); atualizarBolinhaEntregador(); document.getElementById("modal-proprietario").style.display = "flex"; aplicarRestricoesPlano(); }
 
         // ===================== Tela cheia da aba Pedidos =====================
         // Tela cheia "de verdade" DENTRO do próprio app: some com o cabeçalho "Painel de
