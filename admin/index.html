@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NEXO</title>
+    <title>CZK MAKI</title>
 
     <!-- ===================== Prévia de link (WhatsApp, redes sociais, etc.) =====================
          Sem essas tags, apps como o WhatsApp só conseguem mostrar o <title> em texto puro, sem
@@ -63,7 +63,7 @@
          o <noscript> abaixo garante que os ícones carreguem do mesmo jeito. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700;800&family=Oswald:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <!-- Leaflet (mapa) e Chart.js (gráficos) NÃO são mais carregados aqui no <head>.
          São bibliotecas usadas só dentro do painel Admin/Entregador (mapa de rastreamento e aba de Relatórios),
          então agora são carregadas sob demanda (ver czkCarregarLeaflet/czkCarregarChart no script principal),
@@ -202,7 +202,7 @@
             50% { box-shadow: 0 0 0 8px rgba(239,68,68,0), 0 0 24px 6px rgba(239,68,68,0.6); }
         }
         .cozinha-ticket .cozinha-itens { font-size: 0.95rem; line-height: 1.35; }
-        .cozinha-cronometro { font-family: 'Share Tech Mono', 'Courier New', monospace; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.5px; line-height: 1; }
+        .cozinha-cronometro { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.5px; line-height: 1; }
         .cozinha-cronometro.tempo-ok { color: #4ade80; }
         .cozinha-cronometro.tempo-atencao { color: #facc15; }
         .cozinha-cronometro.tempo-atrasado { color: #f87171; font-weight: 800; font-size: 1.25rem; text-shadow: 0 0 8px rgba(248,113,113,0.85), 0 0 2px rgba(248,113,113,0.9); }
@@ -214,7 +214,12 @@
         /* Telas de login e cadastro: cartão em branco transparente, deixando a foto de fundo aparecer */
         #screen-login .glass-card, #screen-auth .glass-card { background: rgba(255, 253, 246, 0.92); backdrop-filter: blur(14px); }
         /* Painéis do admin/entregador agora seguem o mesmo creme do restante do app */
-        #admin-panel, #entregador-panel { background-color: #f3e8ca !important; }
+        :root { --nexo-painel-cor-dia: #FFF6E4; --nexo-painel-cor-noite: #101a2c; --nexo-cor-painel-atual: var(--nexo-painel-cor-dia); }
+        #admin-panel, #entregador-panel { background-color: var(--nexo-cor-painel-atual) !important; }
+        .cor-painel-swatch-btn { background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.8); cursor: pointer; }
+        .cor-painel-swatch-btn:hover { background: rgba(0,0,0,0.35); }
+        .cor-painel-swatch-btn.cor-painel-ativo { border-color: #2563eb !important; background: rgba(37,99,235,0.18); color: #fff; }
+        .cor-painel-swatch { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); display: inline-block; }
         /* Itens do menu do cliente (Meus Endereços/Configurações/Meus Pedidos/Suporte): fundo branco com
            leve destaque só no hover — usa classe própria pra não ser pega pela regra de botões azuis abaixo */
         .czk-dropdown-item { transition: background 0.15s ease; }
@@ -630,6 +635,16 @@
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos > .glass-card-solid {
             border-radius: 0; border: none; height: 100%; min-height: 100vh;
+        }
+        /* A barra de sub-abas (Cancelamentos, Em andamento, Suporte, Retirada, Balcão, Finalizados)
+           ficava dentro do card que rola inteiro na tela cheia, então ao descer a lista de pedidos
+           ela "sumia" (rolava pra fora da tela junto com o resto). Agora fica fixa no topo. */
+        #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar {
+            position: sticky; top: 0; z-index: 5; background: #16233d;
+            margin: -10px -14px 4px; padding: 10px 14px 12px;
+        }
+        #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar + hr {
+            position: sticky; top: 56px; z-index: 5; background: #16233d; margin-top: -1px;
         }
 
         /* ===== Tema claro (creme), só para os cards de "Pedidos novos" / "Em andamento",
@@ -1106,7 +1121,7 @@
         @keyframes biscoitoPapelSai { 0% { opacity: 0; transform: translateY(-14px) scaleX(0.08) rotate(-3deg); } 45% { opacity: 1; transform: translateY(2px) scaleX(1.08) rotate(1.5deg); } 75% { transform: translateY(0) scaleX(0.96) rotate(-0.5deg); } 100% { opacity: 1; transform: translateY(0) scaleX(1) rotate(0deg); } }
         .biscoito-legenda-caixa { margin-top: 12px; background: rgba(16,26,44,0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 10px 18px; box-shadow: 0 14px 30px -12px rgba(0,0,0,0.55); }
         .biscoito-frase-legenda { color: rgba(255,255,255,0.9); font-size: 17px; margin-top: 0; max-width: 240px; line-height: 1.4; }
-        #biscoito-frase-resultado { position: relative; max-width: 300px; font-size: 17px; line-height: 1.5; color: #4a3418; font-style: italic; font-family: Georgia, 'Times New Roman', serif; margin-top: 15px; background: linear-gradient(180deg, #fdf6e0, #f3e6c2); padding: 16px 26px; border-radius: 46px / 16px; box-shadow: 0 10px 22px -8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(120,90,40,0.15); transform-origin: center; }
+        #biscoito-frase-resultado { position: relative; max-width: 300px; font-size: 17px; line-height: 1.5; color: #4a3418; font-style: italic; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; margin-top: 15px; background: linear-gradient(180deg, #fdf6e0, #f3e6c2); padding: 16px 26px; border-radius: 46px / 16px; box-shadow: 0 10px 22px -8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(120,90,40,0.15); transform-origin: center; }
         #biscoito-frase-resultado::before, #biscoito-frase-resultado::after { content: ""; position: absolute; top: 4px; bottom: 4px; width: 14px; border-radius: 50%; background: linear-gradient(90deg, rgba(120,90,40,0.22), rgba(120,90,40,0)); }
         #biscoito-frase-resultado::before { left: -2px; }
         #biscoito-frase-resultado::after { right: -2px; transform: scaleX(-1); }
@@ -1189,7 +1204,7 @@
         /* Caixa preta abaixo de "VENCEDOR": nome de quem foi sorteado */
         .czk-sorteio-nome-pos { left: 37.17%; top: 27.35%; width: 26.05%; height: 5.18%; display: flex; align-items: center; justify-content: center; }
         #sorteio-expandido-resultado-nome {
-            font-family: 'Arial Black', Arial, sans-serif; font-weight: 900; text-align: center;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-weight: 800; text-align: center;
             font-size: clamp(0.55rem, 2.2vw, 1rem); line-height: 1.05; max-width: 100%; padding: 0 4%;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             background: linear-gradient(180deg,#fff6cc 0%,#f9dd7a 25%,#f5c542 55%,#b8720a 100%);
@@ -1198,7 +1213,7 @@
 
         /* 3 janelas brancas dos rolos: o número sorteado entra direto em cima do branco da imagem */
         .czk-sorteio-reel-pos { display: flex; align-items: center; justify-content: center; }
-        .czk-sorteio-reel-num { position: relative; font-family: 'Arial Black', Arial, sans-serif; font-weight: 900; color: #9c1c1c; font-size: clamp(0.9rem, 3.4vw, 1.8rem); text-shadow: 1px 1px 0 rgba(0,0,0,0.12); }
+        .czk-sorteio-reel-num { position: relative; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-weight: 800; color: #9c1c1c; font-size: clamp(0.9rem, 3.4vw, 1.8rem); text-shadow: 1px 1px 0 rgba(0,0,0,0.12); }
         .czk-slot-girando { animation: czkSlotGirar 0.12s linear infinite; }
         @keyframes czkSlotGirar { 0% { transform: translateY(-3px); opacity: 0.55; } 50% { transform: translateY(3px); opacity: 1; } 100% { transform: translateY(-3px); opacity: 0.55; } }
         @media (prefers-reduced-motion: reduce) { .czk-slot-girando { animation: none; } }
@@ -1262,6 +1277,30 @@
             height: 100%;
             object-fit: cover;
             opacity: 0.9;
+        }
+        /* Ícone "@" transparente sobreposto ao selo, só na tela de Área Restrita:
+           metade do tamanho do selo, centralizado sobre ele, clicável para abrir
+           o acesso do desenvolvedor (substitui o antigo botão "Acesso Desenvolvedor"). */
+        .w7-dev-access-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            pointer-events: auto;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            font-weight: 800;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            font-size: clamp(14px, 2.4vw, 26px);
+            line-height: 1;
+            z-index: 3;
         }
     </style>
 </head>
@@ -1399,6 +1438,7 @@
     <div id="modal-proprietario" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:#051a3e;">
         <div class="w7-marca-agua-login" aria-hidden="true">
             <img src="logo-nexo-selo-branco.png" alt="NEXO">
+            <button type="button" class="w7-dev-access-btn" onclick="abrirLoginDesenvolvedor()" title="Acesso Desenvolvedor" aria-label="Acesso Desenvolvedor">@</button>
         </div>
         <div class="glass-card-solid rounded-2xl p-6 w-full max-w-sm border border-blue-700/60 shadow-2xl">
             <div class="flex flex-col items-center mb-4"><i class="fas fa-crown text-3xl text-blue-500 mb-2"></i><h3 class="text-xl font-bold text-blue-500">Área Restrita</h3></div>
@@ -1407,7 +1447,6 @@
             <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-cozinha" onclick="abrirLoginCozinha()" class="w-full bg-teal-600/80 hover:bg-teal-600 py-2 rounded-xl font-semibold">NEXO KDS</button></div>
             <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-mesas" onclick="abrirLoginMesas()" class="w-full bg-amber-600/80 hover:bg-amber-600 py-2 rounded-xl font-semibold">NEXO TABLE</button></div>
             <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-garcom" onclick="abrirLoginGarcom()" class="w-full bg-indigo-600/80 hover:bg-indigo-600 py-2 rounded-xl font-semibold">NEXO WAITER</button></div>
-            <div class="mt-3 border-t border-white/15 pt-4"><button onclick="abrirLoginDesenvolvedor()" class="w-full bg-purple-600/80 hover:bg-purple-600 py-2 rounded-xl font-semibold">Acesso Desenvolvedor</button></div>
             <button onclick="fecharModalAdmin()" class="w-full mt-4 text-white/40 text-sm">Cancelar</button>
         </div>
     </div>
@@ -1547,10 +1586,10 @@
             <img src="logo-nexo.png" alt="NEXO" style="height:64px; width:auto;">
         </div>
         <div class="max-w-6xl mx-auto">
-            <div id="admin-panel-header" class="flex justify-between items-center border-b border-blue-800/40 pb-4 mb-7 flex-wrap gap-4" style="padding-left:120px;">
+            <div id="admin-panel-header" class="flex justify-between items-center border-b border-blue-800/40 pb-4 mb-7 flex-wrap gap-4" style="padding-left:160px;">
                 <div class="flex items-center gap-3 flex-wrap">
                     <i class="fas fa-sliders-h text-blue-500 text-2xl"></i>
-                    <h2 class="text-2xl font-bold tracking-tight text-white">Painel de Controle</h2>
+                    <h2 class="text-2xl font-bold tracking-tight text-white" style="margin-right:36px;">Painel de Controle</h2>
                     <button id="btn-toggle-loja" onclick="toggleLojaAbertaRapido()" class="ml-1 flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border transition"><i class="fas fa-circle text-[8px]"></i> <span id="btn-toggle-loja-texto">ABERTO</span></button>
                     <button id="btn-toggle-pausa" onclick="togglePausaRapido()" class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border transition"><i class="fas fa-pause-circle"></i> <span id="btn-toggle-pausa-texto">PAUSA</span></button>
                 </div>
@@ -1603,6 +1642,7 @@
                                 <button data-tabid="background-config" onclick="abrirConfigTabAdmin('background-config')" class="config-menu-item flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/20 hover:bg-blue-900/40 text-white/80 hover:text-white text-sm font-semibold text-center transition"><i class="fas fa-palette text-xl text-blue-400"></i> Personalizar Fundo</button>
                                 <button data-tabid="aparencia-config" onclick="abrirConfigTabAdmin('aparencia-config')" class="config-menu-item flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/20 hover:bg-blue-900/40 text-white/80 hover:text-white text-sm font-semibold text-center transition"><i class="fas fa-wand-magic-sparkles text-xl text-blue-400"></i> Aparência</button>
                                 <button data-tabid="customizacao-config" onclick="abrirConfigTabAdmin('customizacao-config')" class="config-menu-item flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/20 hover:bg-blue-900/40 text-white/80 hover:text-white text-sm font-semibold text-center transition"><i class="fas fa-cog text-xl text-blue-400"></i> Customização</button>
+                                <button data-tabid="cor-painel-config" onclick="abrirConfigTabAdmin('cor-painel-config')" class="config-menu-item flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/20 hover:bg-blue-900/40 text-white/80 hover:text-white text-sm font-semibold text-center transition"><i class="fas fa-circle-half-stroke text-xl text-blue-400"></i> Alterar Cor Painel</button>
                             </div>
                         </div>
                         <!-- Grupo 3: Cardápio e Marketing — o que é vendido e as ações pra atrair/reter cliente. -->
@@ -1643,7 +1683,7 @@
 
                 <!-- Sub-abas: Cancelamentos / Em andamento / Conversas de suporte / Finalizados (ficam no
                      topo, separadas por uma linha, para não misturar visualmente com a lista de pedidos) -->
-                <div class="flex gap-2 mb-4 flex-wrap">
+                <div id="pedidos-subtabs-bar" class="flex gap-2 mb-4 flex-wrap">
                     <button id="subtab-btn-cancelamentos" onclick="switchSubTabPedidos('cancelamentos')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-ban text-red-400"></i> Cancelamentos <span id="contador-cancelamentos-badge" class="hidden bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-andamento" onclick="switchSubTabPedidos('andamento')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full bg-blue-900/40 text-blue-400 text-sm font-semibold flex items-center gap-2"><i class="fas fa-fire"></i> Em andamento</button>
                     <button id="subtab-btn-suporte" onclick="switchSubTabPedidos('suporte')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-comment-dots"></i> Conversas de suporte <span id="contador-suporte-badge" class="hidden bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
@@ -1775,11 +1815,6 @@
                                 <select id="aparencia-fonte" onchange="atualizarAparenciaPreview()" class="w-full rounded-xl p-3">
                                     <option value="Inter">Inter (padrão)</option>
                                     <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
-                                    <option value="Poppins">Poppins</option>
-                                    <option value="Montserrat">Montserrat</option>
-                                    <option value="Quicksand">Quicksand</option>
-                                    <option value="Playfair Display">Playfair Display</option>
-                                    <option value="Oswald">Oswald</option>
                                 </select>
                             </div>
                             <div>
@@ -1873,6 +1908,45 @@
                         </div>
                     </div>
 
+                </div>
+            </div>
+
+            <!-- Aba: Alterar Cor Painel (fundo do painel admin/entregador — creme de dia, azul-marinho de noite) -->
+            <div id="cor-painel-config" class="admin-tab-content">
+                <div class="glass-card-solid rounded-2xl p-6 border border-blue-800/40">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-5"><i class="fas fa-circle-half-stroke"></i> Alterar Cor Painel</h3>
+                    <p class="text-white/60 text-sm mb-5">Define a cor de fundo por trás dos cartões do Painel de Controle e do painel do entregador. Pode ser escolhida manualmente ou trocar sozinha em dois horários fixos do dia.</p>
+
+                    <div id="cor-painel-manual-bloco" class="mb-6">
+                        <label class="text-white/80 text-xs block mb-2">Modo manual</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" id="cor-painel-btn-dia" onclick="selecionarModoCorPainelManual('dia')" class="cor-painel-swatch-btn rounded-xl p-4 border-2 border-transparent flex flex-col items-center gap-2 font-semibold text-sm">
+                                <span class="cor-painel-swatch" style="background:#FFF6E4;"></span> Diurno (creme)
+                            </button>
+                            <button type="button" id="cor-painel-btn-noite" onclick="selecionarModoCorPainelManual('noite')" class="cor-painel-swatch-btn rounded-xl p-4 border-2 border-transparent flex flex-col items-center gap-2 font-semibold text-sm">
+                                <span class="cor-painel-swatch" style="background:#101a2c;"></span> Noturno (azul NEXO)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 bg-black/30 p-3 rounded-xl mb-4">
+                        <input type="checkbox" id="cor-painel-automatico" onchange="atualizarVisibilidadeHorariosCorPainel()" class="w-5 h-5 accent-blue-500">
+                        <label for="cor-painel-automatico" class="text-white/90 text-sm font-semibold">Modo automático (troca sozinho no horário configurado)</label>
+                    </div>
+
+                    <div id="cor-painel-horarios-bloco" class="grid sm:grid-cols-2 gap-4 mb-4" style="display:none;">
+                        <div>
+                            <label class="text-white/80 text-xs block mb-2"><i class="fas fa-sun mr-1"></i> Ativar diurno às</label>
+                            <input type="time" id="cor-painel-hora-dia" value="06:00" class="w-full rounded-xl p-3">
+                        </div>
+                        <div>
+                            <label class="text-white/80 text-xs block mb-2"><i class="fas fa-moon mr-1"></i> Ativar noturno às</label>
+                            <input type="time" id="cor-painel-hora-noite" value="18:00" class="w-full rounded-xl p-3">
+                        </div>
+                    </div>
+                    <p class="text-white/40 text-[11px] mb-5">Com o modo automático ligado, o sistema confere o horário a cada minuto e troca a cor sozinho — sem precisar de ninguém abrindo o painel.</p>
+
+                    <button onclick="salvarConfigCorPainel()" class="bg-emerald-700 hover:bg-emerald-600 py-3 rounded-xl font-bold w-full flex items-center justify-center gap-2"><i class="fas fa-save"></i> Salvar</button>
                 </div>
             </div>
 
@@ -2110,11 +2184,7 @@
                                     <label class="text-white/80 text-xs block mb-2"><i class="fas fa-font mr-1"></i> Tipo de fonte</label>
                                     <select id="promo-fonte" onchange="atualizarPreviewPromo()" class="w-full rounded-xl p-3">
                                         <option value="Inter">Inter (padrão)</option>
-                                        <option value="Poppins">Poppins</option>
-                                        <option value="Montserrat">Montserrat</option>
-                                        <option value="Quicksand">Quicksand</option>
-                                        <option value="Playfair Display">Playfair Display</option>
-                                        <option value="Oswald">Oswald</option>
+                                        <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
                                     </select>
                                 </div>
                                 <div>
@@ -4255,6 +4325,7 @@
             { id: "background-config", label: "Personalizar Fundo", grupo: "Identidade da Loja", planosPadrao: ["premium"] },
             { id: "aparencia-config", label: "Aparência", grupo: "Identidade da Loja", planosPadrao: ["premium"] },
             { id: "customizacao-config", label: "Customização", grupo: "Identidade da Loja", planosPadrao: ["premium"] },
+            { id: "cor-painel-config", label: "Alterar Cor Painel", grupo: "Identidade da Loja", planosPadrao: ["premium"] },
             // Cardápio e Marketing
             { id: "cardapio-crud", label: "Cardápio", grupo: "Cardápio e Marketing", planosPadrao: ["standard", "premium"] },
             { id: "estoque-admin", label: "Estoque", grupo: "Cardápio e Marketing", planosPadrao: ["premium"] },
@@ -9905,6 +9976,83 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         function trocarFundoRapido(url) { bgConfig.url = url; document.getElementById("bg-url").value = url; aplicarFundo(); czkSave("czk_bg_config", bgConfig); document.getElementById("preview-bg-img").src = url; }
         function hexToRgba(hex, op) { let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${op})`; }
         function aplicarFundo() { const bg = document.getElementById("dynamic-bg"); if(bg) { bg.src = bgConfig.url; const nitidez = (bgConfig.nitidez != null ? bgConfig.nitidez : 70) / 100; const contraste = 1 + nitidez * 0.5; const saturacao = 1 + nitidez * 0.3; bg.style.filter = `brightness(${bgConfig.brightness}) contrast(${contraste.toFixed(2)}) saturate(${saturacao.toFixed(2)})`; } const ov = document.getElementById("dynamic-overlay"); if(ov) ov.style.background = `linear-gradient(135deg, ${hexToRgba(bgConfig.overlayColor1,bgConfig.overlayOpacity)}, ${hexToRgba(bgConfig.overlayColor2,bgConfig.overlayOpacity)})`; }
+        // =========================================================================
+        //  ALTERAR COR PAINEL: fundo do painel admin/entregador — creme (dia) ou
+        //  azul-marinho da NEXO (noite). Pode ser trocado manualmente pelo lojista
+        //  ou de forma automática, checando o relógio a cada minuto.
+        // =========================================================================
+        function aplicarCorPainelModo(modo) {
+            const cor = modo === 'noite' ? 'var(--nexo-painel-cor-noite)' : 'var(--nexo-painel-cor-dia)';
+            document.documentElement.style.setProperty('--nexo-cor-painel-atual', cor);
+            const btnDia = document.getElementById('cor-painel-btn-dia');
+            const btnNoite = document.getElementById('cor-painel-btn-noite');
+            if (btnDia && btnNoite) {
+                btnDia.classList.toggle('cor-painel-ativo', modo !== 'noite');
+                btnNoite.classList.toggle('cor-painel-ativo', modo === 'noite');
+            }
+        }
+        function czkMinutosDeHorario(hhmm) {
+            const partes = (hhmm || '00:00').split(':').map(Number);
+            return (partes[0] || 0) * 60 + (partes[1] || 0);
+        }
+        function calcularModoCorPainelAutomatico(config) {
+            const agora = new Date();
+            const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+            const inicioDia = czkMinutosDeHorario(config.horaDia || '06:00');
+            const inicioNoite = czkMinutosDeHorario(config.horaNoite || '18:00');
+            if (inicioDia === inicioNoite) return 'dia';
+            if (inicioDia < inicioNoite) {
+                return (minutosAgora >= inicioDia && minutosAgora < inicioNoite) ? 'dia' : 'noite';
+            }
+            // Faixa noturna que cruza a meia-noite (ex: noite às 22:00, dia às 05:00)
+            return (minutosAgora >= inicioDia || minutosAgora < inicioNoite) ? 'dia' : 'noite';
+        }
+        let _czkCorPainelIntervalo = null;
+        function iniciarChecagemCorPainelAutomatica() {
+            if (_czkCorPainelIntervalo) clearInterval(_czkCorPainelIntervalo);
+            _czkCorPainelIntervalo = setInterval(() => {
+                const config = czkGet('czk_cor_painel') || {};
+                if (config.automatico) aplicarCorPainelModo(calcularModoCorPainelAutomatico(config));
+            }, 60000);
+        }
+        function selecionarModoCorPainelManual(modo) {
+            aplicarCorPainelModo(modo);
+        }
+        function atualizarVisibilidadeHorariosCorPainel() {
+            const auto = document.getElementById('cor-painel-automatico');
+            const blocoHorarios = document.getElementById('cor-painel-horarios-bloco');
+            const blocoManual = document.getElementById('cor-painel-manual-bloco');
+            if (!auto || !blocoHorarios) return;
+            blocoHorarios.style.display = auto.checked ? 'block' : 'none';
+            if (blocoManual) blocoManual.style.opacity = auto.checked ? '0.4' : '1';
+        }
+        // Carrega a config salva e aplica a cor certa assim que o app abre (não depende
+        // de a aba "Alterar Cor Painel" ter sido aberta alguma vez).
+        function carregarConfigCorPainel() {
+            const config = czkGet('czk_cor_painel') || { automatico: false, modoManual: 'dia', horaDia: '06:00', horaNoite: '18:00' };
+            const elAuto = document.getElementById('cor-painel-automatico');
+            const elHoraDia = document.getElementById('cor-painel-hora-dia');
+            const elHoraNoite = document.getElementById('cor-painel-hora-noite');
+            if (elAuto) elAuto.checked = !!config.automatico;
+            if (elHoraDia) elHoraDia.value = config.horaDia || '06:00';
+            if (elHoraNoite) elHoraNoite.value = config.horaNoite || '18:00';
+            atualizarVisibilidadeHorariosCorPainel();
+            const modoAplicar = config.automatico ? calcularModoCorPainelAutomatico(config) : (config.modoManual || 'dia');
+            aplicarCorPainelModo(modoAplicar);
+            iniciarChecagemCorPainelAutomatica();
+        }
+        function salvarConfigCorPainel() {
+            const automatico = document.getElementById('cor-painel-automatico').checked;
+            const horaDia = document.getElementById('cor-painel-hora-dia').value || '06:00';
+            const horaNoite = document.getElementById('cor-painel-hora-noite').value || '18:00';
+            const modoManual = document.getElementById('cor-painel-btn-noite').classList.contains('cor-painel-ativo') ? 'noite' : 'dia';
+            const config = { automatico, horaDia, horaNoite, modoManual };
+            czkSave('czk_cor_painel', config);
+            const modoAplicar = automatico ? calcularModoCorPainelAutomatico(config) : modoManual;
+            aplicarCorPainelModo(modoAplicar);
+            iniciarChecagemCorPainelAutomatica();
+            czkAlert('Cor do painel salva!');
+        }
         function carregarConfigFundo() { const saved = czkGet("czk_bg_config"); if(saved && Object.keys(saved).length) bgConfig = saved; if(bgConfig.nitidez == null) bgConfig.nitidez = 70; aplicarFundo(); document.getElementById("bg-url").value = bgConfig.url; document.getElementById("overlay-color1").value = bgConfig.overlayColor1; document.getElementById("overlay-color2").value = bgConfig.overlayColor2; document.getElementById("overlay-opacity").value = bgConfig.overlayOpacity; document.getElementById("opacity-value").innerText = bgConfig.overlayOpacity; document.getElementById("bg-brightness").value = bgConfig.brightness; document.getElementById("brightness-value").innerText = bgConfig.brightness; const campoNitidez = document.getElementById("bg-nitidez"); if(campoNitidez) campoNitidez.value = bgConfig.nitidez; const labelNitidez = document.getElementById("nitidez-value"); if(labelNitidez) labelNitidez.innerText = bgConfig.nitidez + "%"; document.getElementById("preview-bg-img").src = bgConfig.url; }
         function salvarConfigFundo() { bgConfig.url = document.getElementById("bg-url").value.trim() || bgConfig.url; bgConfig.overlayColor1 = document.getElementById("overlay-color1").value; bgConfig.overlayColor2 = document.getElementById("overlay-color2").value; bgConfig.overlayOpacity = parseFloat(document.getElementById("overlay-opacity").value); bgConfig.brightness = parseFloat(document.getElementById("bg-brightness").value); const campoNitidezSalvar = document.getElementById("bg-nitidez"); bgConfig.nitidez = campoNitidezSalvar ? parseFloat(campoNitidezSalvar.value) : 70; czkSave("czk_bg_config", bgConfig); aplicarFundo(); czkAlert("Fundo salvo!"); }
         function resetarFundoPadrao() { bgConfig = { url:"https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?q=80&w=2070&auto=format", overlayColor1:"#1e1e23", overlayColor2:"#141419", overlayOpacity:0.7, brightness:0.35, nitidez:70 }; czkSave("czk_bg_config", bgConfig); aplicarFundo(); document.getElementById("bg-url").value = bgConfig.url; document.getElementById("overlay-color1").value = bgConfig.overlayColor1; document.getElementById("overlay-color2").value = bgConfig.overlayColor2; document.getElementById("overlay-opacity").value = bgConfig.overlayOpacity; document.getElementById("bg-brightness").value = bgConfig.brightness; const campoNitidezReset = document.getElementById("bg-nitidez"); if(campoNitidezReset) campoNitidezReset.value = bgConfig.nitidez; const labelNitidezReset = document.getElementById("nitidez-value"); if(labelNitidezReset) labelNitidezReset.innerText = bgConfig.nitidez + "%"; document.getElementById("preview-bg-img").src = bgConfig.url; czkAlert("Fundo restaurado."); }
@@ -13280,6 +13428,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         const CZK_LABELS_CONFIG_ADMIN = {
             'controle-entrega': 'Controle Entrega', 'config-empresa': 'Empresa', 'logo-config': 'Logomarca',
             'background-config': 'Personalizar Fundo', 'aparencia-config': 'Aparência', 'customizacao-config': 'Customização',
+            'cor-painel-config': 'Alterar Cor Painel',
             'promocional-config': 'Promocional', 'cardapio-crud': 'Cardápio', 'estoque-admin': 'Estoque', 'taxas-regioes': 'Taxas',
             'cupons-admin': 'Cupons', 'sorteios-admin': 'Sorteios', 'pedidos-list': 'Histórico',
             'financas-admin': 'Finanças', 'relatorios-admin': 'Relatórios', 'entregadores': 'Entregadores',
@@ -13329,6 +13478,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             fecharMenuConfiguracoesAdmin();
             switchTab(tabId);
             if (tabId === 'customizacao-config') abrirAbaCustomizacao();
+            if (tabId === 'cor-painel-config') carregarConfigCorPainel();
             if (tabId === 'relatorio-mesas-admin') renderRelatorioMesas();
             _czkMarcarBotaoPrincipalAtivo('tab-btn-principal-config');
             const label = document.getElementById('tab-btn-config-label');
@@ -15193,6 +15343,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             let c = czkGet("czk_config"); if(c && Object.keys(c).length) configEmpresa = c;
             let logo = czkGet("czk_logomarca"); if(logo && Object.keys(logo).length) { logomarca = logo; if(!logomarca.tamanho) logomarca.tamanho = 100; }
             carregarConfigFundo();
+            carregarConfigCorPainel();
             carregarAparencia();
             carregarCustomizacao();
             aplicarIconeAppFavicon(customizacaoConfig);
