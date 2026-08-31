@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CZK MAKI</title>
+    <title>NEXO</title>
 
     <!-- ===================== Prévia de link (WhatsApp, redes sociais, etc.) =====================
          Sem essas tags, apps como o WhatsApp só conseguem mostrar o <title> em texto puro, sem
@@ -241,6 +241,7 @@
         #admin-panel [class*="text-white"],
         #entregador-panel [class*="text-white"],
         #modal-proprietario [class*="text-white"],
+        #modal-admin-login [class*="text-white"],
         #modal-entregador [class*="text-white"],
         #modal-desenvolvedor [class*="text-white"],
         #czk-modal-alert [class*="text-white"],
@@ -276,6 +277,7 @@
         #admin-panel [class*="text-white/40"],
         #entregador-panel [class*="text-white/40"],
         #modal-proprietario [class*="text-white/40"],
+        #modal-admin-login [class*="text-white/40"],
         #modal-entregador [class*="text-white/40"],
         #modal-desenvolvedor [class*="text-white/40"],
         #czk-modal-alert [class*="text-white/40"],
@@ -311,6 +313,7 @@
         #admin-panel [class*="text-white/50"],
         #entregador-panel [class*="text-white/50"],
         #modal-proprietario [class*="text-white/50"],
+        #modal-admin-login [class*="text-white/50"],
         #modal-entregador [class*="text-white/50"],
         #modal-desenvolvedor [class*="text-white/50"],
         #czk-modal-alert [class*="text-white/50"],
@@ -346,6 +349,7 @@
         #admin-panel [class*="text-white/60"],
         #entregador-panel [class*="text-white/60"],
         #modal-proprietario [class*="text-white/60"],
+        #modal-admin-login [class*="text-white/60"],
         #modal-entregador [class*="text-white/60"],
         #modal-desenvolvedor [class*="text-white/60"],
         #czk-modal-alert [class*="text-white/60"],
@@ -381,6 +385,7 @@
         #admin-panel [class*="text-white/70"],
         #entregador-panel [class*="text-white/70"],
         #modal-proprietario [class*="text-white/70"],
+        #modal-admin-login [class*="text-white/70"],
         #modal-entregador [class*="text-white/70"],
         #modal-desenvolvedor [class*="text-white/70"],
         #czk-modal-alert [class*="text-white/70"],
@@ -416,6 +421,7 @@
         #admin-panel [class*="text-white/80"],
         #entregador-panel [class*="text-white/80"],
         #modal-proprietario [class*="text-white/80"],
+        #modal-admin-login [class*="text-white/80"],
         #modal-entregador [class*="text-white/80"],
         #modal-desenvolvedor [class*="text-white/80"],
         #czk-modal-alert [class*="text-white/80"],
@@ -594,6 +600,16 @@
 
         .btn-red-czk { background: #16233d; transition: all 0.25s ease; box-shadow: 0 6px 16px rgba(16,26,44,0.25); border-radius: 14px; }
         .btn-red-czk:hover { transform: translateY(-2px); box-shadow: 0 12px 22px -6px rgba(16,26,44,0.4); filter: brightness(1.15); }
+        /* Mesma "pequena animação" (levanta + sombra + brilho) do botão NEXO ADMIN, aplicada
+           também aos demais acessos da Área Restrita (NEXO DELIVERY, NEXO KDS, NEXO TABLE, NEXO WAITER). */
+        #btn-acesso-entregador, #btn-acesso-cozinha, #btn-acesso-mesas, #btn-acesso-garcom {
+            transition: all 0.25s ease;
+        }
+        #btn-acesso-entregador:hover, #btn-acesso-cozinha:hover, #btn-acesso-mesas:hover, #btn-acesso-garcom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 22px -6px rgba(16,26,44,0.4);
+            filter: brightness(1.15);
+        }
         .btn-cadastro-destaque { background: linear-gradient(105deg, #22c55e 0%, #15803d 100%); transition: all 0.25s ease; box-shadow: 0 4px 12px rgba(34,197,94,0.3); border-radius: 14px; }
         .btn-cadastro-destaque:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(34,197,94,0.6); filter: brightness(1.05); }
         /* Botão de envio manual pelo WhatsApp (cor oficial do WhatsApp) */
@@ -1418,7 +1434,7 @@
             <div class="flex flex-col items-center mb-4"><i class="fas fa-kitchen-set text-3xl text-teal-500 mb-2"></i><h3 class="text-xl font-bold text-teal-500">Painel da Cozinha (KDS)</h3><p class="text-white/50 text-xs mt-1 text-center">Acesso único para o monitor da bancada — não precisa de login individual.</p></div>
             <input type="password" inputmode="numeric" id="pin-cozinha" placeholder="PIN da Cozinha" class="w-full rounded-xl p-3 mb-4 text-sm text-center tracking-widest" onkeydown="if(event.key==='Enter') validarCozinha()">
             <button onclick="validarCozinha()" class="w-full bg-teal-600 hover:bg-teal-500 py-2.5 rounded-xl font-semibold"><i class="fas fa-sign-in-alt mr-2"></i>Abrir painel</button>
-            <button onclick="fecharModalCozinha()" class="w-full mt-3 border border-white/20 hover:border-white/40 text-white/70 hover:text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"><i class="fas fa-xmark"></i> Cancelar e sair</button>
+            <button onclick="fecharModalCozinha()" class="w-full mt-3 border border-white/20 hover:border-white/40 text-white/70 hover:text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"><i class="fas fa-xmark"></i> Cancelar</button>
         </div>
     </div>
 
@@ -1491,7 +1507,7 @@
             <input type="text" id="login-garcom" placeholder="Login" class="w-full rounded-xl p-3 mb-3 text-sm">
             <input type="password" id="senha-garcom" placeholder="Senha" class="w-full rounded-xl p-3 mb-4 text-sm" onkeydown="if(event.key==='Enter') validarGarcom()">
             <button onclick="validarGarcom()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-xl font-semibold"><i class="fas fa-sign-in-alt mr-2"></i>Acessar</button>
-            <button onclick="fecharModalGarcom()" class="w-full mt-3 border border-white/20 hover:border-white/40 text-white/70 hover:text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"><i class="fas fa-xmark"></i> Cancelar e sair</button>
+            <button onclick="fecharModalGarcom()" class="w-full mt-3 border border-white/20 hover:border-white/40 text-white/70 hover:text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"><i class="fas fa-xmark"></i> Cancelar</button>
         </div>
     </div>
 
@@ -11374,7 +11390,6 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         // =========================================================================
         function abrirLoginMesas() {
             if(!czkRecursoLiberado('modulo_mesas')) return czkAlertUpgradePlano();
-            document.getElementById("modal-proprietario").style.display = "none";
             document.getElementById("mesas-login-passo-pin").classList.remove("hidden");
             document.getElementById("mesas-login-passo-escolha").classList.add("hidden");
             document.getElementById("pin-mesas").value = "";
