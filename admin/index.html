@@ -221,7 +221,7 @@
         .czk-dropdown-item:hover { background: rgba(22,35,61,0.06); }
 
         /* Força texto navy dentro das áreas claras do app (cliente + admin + entregador + modais leves), sem tocar no HTML/JS */
-        #screen-login, #screen-auth, #app-cliente, #modal-carrinho, #modal-historico-cliente, #modal-confirmar-pedido, #modal-config-conta, #modal-enderecos, #modal-novo-endereco, #modal-detalhe-produto, #modal-suporte-cliente, #modal-chat-suporte, #modal-mapa-entrega, #modal-pedido-enviado, #admin-panel, #entregador-panel, #modal-proprietario, #modal-entregador, #modal-desenvolvedor, #czk-modal-alert, #czk-modal-confirm, #czk-modal-cupom-cliente, #czk-modal-impressora, #czk-modal-motivo-suporte, #czk-modal-prompt, #czk-modal-recibo-entregador, #modal-cozinha, #modal-enviar-cupom, #modal-garcom, #modal-mesas-login, #modal-oferta-combo, #modal-ofertas-desconto, #modal-pedido-cancelado, #modal-pin-quiosque, #modal-pin-sair-mesa {
+        #screen-login, #screen-auth, #app-cliente, #modal-carrinho, #modal-historico-cliente, #modal-confirmar-pedido, #modal-config-conta, #modal-enderecos, #modal-novo-endereco, #modal-detalhe-produto, #modal-suporte-cliente, #modal-chat-suporte, #modal-mapa-entrega, #modal-pedido-enviado, #admin-panel, #entregador-panel, #modal-proprietario, #modal-admin-login, #modal-entregador, #modal-desenvolvedor, #czk-modal-alert, #czk-modal-confirm, #czk-modal-cupom-cliente, #czk-modal-impressora, #czk-modal-motivo-suporte, #czk-modal-prompt, #czk-modal-recibo-entregador, #modal-cozinha, #modal-enviar-cupom, #modal-garcom, #modal-mesas-login, #modal-oferta-combo, #modal-ofertas-desconto, #modal-pedido-cancelado, #modal-pin-quiosque, #modal-pin-sair-mesa {
             color: #16233d;
         }
         #screen-login [class*="text-white"],
@@ -606,8 +606,7 @@
         /* ===== Tela cheia "de verdade" da aba Pedidos (dentro do próprio app, não só do navegador) =====
            Quando ativa (classe no #admin-panel), some com o cabeçalho "Painel de Controle" e a barra de
            abas Pedidos/Configurações, e o cartão de pedidos passa a ocupar 100% da tela por cima de tudo. */
-        #admin-panel.czk-pedidos-tela-cheia #admin-panel-header,
-        #admin-panel.czk-pedidos-tela-cheia #admin-panel-tabs-principais { display: none !important; }
+        #admin-panel.czk-pedidos-tela-cheia #admin-panel-header { display: none !important; }
         #admin-panel.czk-pedidos-tela-cheia { padding: 0 !important; }
         #admin-panel.czk-pedidos-tela-cheia > .max-w-6xl { max-width: 100% !important; margin: 0 !important; height: 100%; }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos {
@@ -1381,14 +1380,24 @@
     <div id="modal-proprietario" class="fixed inset-0 z-50 bg-[#13223a]/98 hidden items-center justify-center p-4 backdrop-blur-md">
         <div class="glass-card-solid rounded-2xl p-6 w-full max-w-sm border border-blue-700/60 shadow-2xl">
             <div class="flex flex-col items-center mb-4"><i class="fas fa-crown text-3xl text-blue-500 mb-2"></i><h3 class="text-xl font-bold text-blue-500">Área Restrita</h3></div>
-            <input type="password" id="senha-admin" placeholder="Senha Mestre" class="w-full rounded-xl p-3 mb-4 text-sm">
-            <button onclick="validarAdmin()" class="w-full btn-red-czk py-2.5 rounded-xl font-semibold"><i class="fas fa-sign-in-alt mr-2"></i>Acessar Painel</button>
-            <button onclick="fecharModalAdmin()" class="w-full mt-3 text-white/40 text-sm">Cancelar</button>
-            <div class="mt-4 border-t border-white/15 pt-4"><button id="btn-acesso-entregador" onclick="abrirLoginEntregador()" class="w-full bg-yellow-600/80 hover:bg-yellow-600 py-2 rounded-xl font-semibold flex items-center justify-center gap-2"><i class="fas fa-motorcycle"></i> Acesso Entregador</button></div>
-            <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-cozinha" onclick="abrirLoginCozinha()" class="w-full bg-teal-600/80 hover:bg-teal-600 py-2 rounded-xl font-semibold flex items-center justify-center gap-2"><i class="fas fa-kitchen-set"></i> Acesso Cozinha (KDS)</button></div>
-            <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-mesas" onclick="abrirLoginMesas()" class="w-full bg-amber-600/80 hover:bg-amber-600 py-2 rounded-xl font-semibold flex items-center justify-center gap-2"><i class="fas fa-utensils"></i> Acesso Mesas</button></div>
-            <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-garcom" onclick="abrirLoginGarcom()" class="w-full bg-indigo-600/80 hover:bg-indigo-600 py-2 rounded-xl font-semibold flex items-center justify-center gap-2"><i class="fas fa-concierge-bell"></i> Acesso Garçom</button></div>
-            <div class="mt-3 border-t border-white/15 pt-4"><button onclick="abrirLoginDesenvolvedor()" class="w-full bg-purple-600/80 hover:bg-purple-600 py-2 rounded-xl font-semibold flex items-center justify-center gap-2"><i class="fas fa-code"></i> Acesso Desenvolvedor</button></div>
+            <div class="mt-4 border-t border-white/15 pt-4"><button onclick="abrirLoginAdmin()" class="w-full btn-red-czk py-2.5 rounded-xl font-semibold">NEXO ADMIN</button></div>
+            <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-entregador" onclick="abrirLoginEntregador()" class="w-full bg-yellow-600/80 hover:bg-yellow-600 py-2 rounded-xl font-semibold">NEXO DELIVERY</button></div>
+            <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-cozinha" onclick="abrirLoginCozinha()" class="w-full bg-teal-600/80 hover:bg-teal-600 py-2 rounded-xl font-semibold">NEXO KDS</button></div>
+            <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-mesas" onclick="abrirLoginMesas()" class="w-full bg-amber-600/80 hover:bg-amber-600 py-2 rounded-xl font-semibold">NEXO TABLE</button></div>
+            <div class="mt-3 border-t border-white/15 pt-4"><button id="btn-acesso-garcom" onclick="abrirLoginGarcom()" class="w-full bg-indigo-600/80 hover:bg-indigo-600 py-2 rounded-xl font-semibold">NEXO WAITER</button></div>
+            <div class="mt-3 border-t border-white/15 pt-4"><button onclick="abrirLoginDesenvolvedor()" class="w-full bg-purple-600/80 hover:bg-purple-600 py-2 rounded-xl font-semibold">Acesso Desenvolvedor</button></div>
+            <button onclick="fecharModalAdmin()" class="w-full mt-4 text-white/40 text-sm">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL LOGIN NEXO ADMIN -->
+    <div id="modal-admin-login" class="fixed inset-0 z-50 bg-[#13223a]/98 hidden items-center justify-center p-4 backdrop-blur-md">
+        <div class="glass-card-solid rounded-2xl p-6 w-full max-w-sm border border-blue-600/60 shadow-2xl">
+            <div class="flex flex-col items-center mb-4"><i class="fas fa-crown text-3xl text-blue-400 mb-2"></i><h3 class="text-xl font-bold text-blue-400">NEXO ADMIN</h3></div>
+            <input type="text" id="login-admin" placeholder="Login" class="w-full rounded-xl p-3 mb-3 text-sm">
+            <input type="password" id="senha-admin-new" placeholder="Senha" class="w-full rounded-xl p-3 mb-4 text-sm">
+            <button onclick="validarAdminNexo()" class="w-full bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl font-semibold">Acessar</button>
+            <button onclick="fecharModalAdminLogin()" class="w-full mt-3 text-white/40 text-sm">Cancelar</button>
         </div>
     </div>
 
@@ -1511,15 +1520,19 @@
     <!-- PAINEL ADMIN -->
     <div id="admin-panel" class="fixed inset-0 z-50 bg-[#101a2c] overflow-y-auto hidden p-5">
         <div class="max-w-6xl mx-auto">
-            <div id="admin-panel-header" class="flex justify-between items-center border-b border-blue-800/40 pb-4 mb-7">
-                <div class="flex items-center gap-3 flex-wrap"><i class="fas fa-sliders-h text-blue-500 text-2xl"></i><h2 class="text-2xl font-bold tracking-tight text-white">Painel de Controle</h2>
-                <button id="btn-toggle-loja" onclick="toggleLojaAbertaRapido()" class="ml-1 flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border transition"><i class="fas fa-circle text-[8px]"></i> <span id="btn-toggle-loja-texto">ABERTO</span></button>
-                <button id="btn-toggle-pausa" onclick="togglePausaRapido()" class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border transition"><i class="fas fa-pause-circle"></i> <span id="btn-toggle-pausa-texto">PAUSA</span></button></div>
-                <button onclick="fecharAdmin()" class="text-white/70 hover:text-blue-300 text-3xl modal-close-x font-bold">&times;</button>
-            </div>
-            <div id="admin-panel-tabs-principais" class="flex flex-wrap items-center gap-3 mb-7 border-b border-white/15 pb-4">
-                <button id="tab-btn-principal-pedidos" onclick="abrirAbaPrincipalAdmin('pedidos-ativos')" class="tab-admin-btn px-5 py-2 rounded-full bg-blue-900/40 text-blue-400 font-semibold flex items-center gap-2"><i class="fas fa-clipboard-list"></i> Pedidos</button>
-                <button id="tab-btn-principal-config" onclick="abrirMenuConfiguracoesAdmin()" class="tab-admin-btn px-5 py-2 rounded-full text-white/80 hover:text-white flex items-center gap-2"><i class="fas fa-gear"></i> <span id="tab-btn-config-label">Configurações</span> <i class="fas fa-chevron-down text-[10px] opacity-70"></i></button>
+            <div id="admin-panel-header" class="flex justify-between items-center border-b border-blue-800/40 pb-4 mb-7 flex-wrap gap-4">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <img src="logo-nexo.png" alt="NEXO" class="h-12 w-auto shrink-0">
+                    <i class="fas fa-sliders-h text-blue-500 text-2xl"></i>
+                    <h2 class="text-2xl font-bold tracking-tight text-white">Painel de Controle</h2>
+                    <button id="btn-toggle-loja" onclick="toggleLojaAbertaRapido()" class="ml-1 flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border transition"><i class="fas fa-circle text-[8px]"></i> <span id="btn-toggle-loja-texto">ABERTO</span></button>
+                    <button id="btn-toggle-pausa" onclick="togglePausaRapido()" class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border transition"><i class="fas fa-pause-circle"></i> <span id="btn-toggle-pausa-texto">PAUSA</span></button>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button id="tab-btn-principal-pedidos" onclick="abrirAbaPrincipalAdmin('pedidos-ativos')" class="tab-admin-btn px-5 py-2 rounded-full bg-blue-900/40 text-blue-400 font-semibold flex items-center gap-2"><i class="fas fa-clipboard-list"></i> Pedidos</button>
+                    <button id="tab-btn-principal-config" onclick="abrirMenuConfiguracoesAdmin()" class="tab-admin-btn px-5 py-2 rounded-full text-white/80 hover:text-white flex items-center gap-2"><i class="fas fa-gear"></i> <span id="tab-btn-config-label">Configurações</span> <i class="fas fa-chevron-down text-[10px] opacity-70"></i></button>
+                    <button onclick="fecharAdmin()" class="text-white/70 hover:text-blue-300 text-3xl modal-close-x font-bold">&times;</button>
+                </div>
             </div>
 
             <!-- Modal seletor de "Configurações": reúne todas as outras abas do admin (Empresa, Cardápio,
@@ -1629,7 +1642,7 @@
                     </div>
                     <div>
                         <h4 class="text-sm font-bold text-red-400 mb-2 flex items-center gap-2"><i class="fas fa-ban"></i> Pedidos cancelados</h4>
-                        <div id="lista-pedidos-cancelados" class="space-y-3 max-h-[45vh] overflow-y-auto"></div>
+                        <div id="lista-pedidos-cancelados" class="space-y-3 overflow-y-auto"></div>
                     </div>
                 </div>
 
@@ -1643,25 +1656,25 @@
                             <button id="filtro-suporte-lidas" onclick="filtrarSuporteLeitura('lidas')" class="filtro-leitura-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-arrow-down"></i> Lidas</button>
                         </div>
                     </div>
-                    <div id="lista-suporte-geral-admin" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+                    <div id="lista-suporte-geral-admin" class="space-y-3 overflow-y-auto"></div>
                 </div>
 
                 <div id="subtab-balcao-conteudo" style="display:none;">
                     <div class="flex justify-between items-center mb-5 flex-wrap gap-3"><h3 class="text-xl font-semibold text-amber-400"><i class="fas fa-cash-register"></i> Mesas para fechar no balcão</h3><div class="relative w-full sm:w-80"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input type="text" id="busca-balcao" oninput="renderBalcaoAdmin()" placeholder="Buscar por mesa" class="w-full rounded-xl pl-9 pr-3 py-2.5 bg-[#16243c] border border-blue-800 text-white text-sm placeholder-slate-500"></div></div>
                     <p class="text-white/50 text-xs mb-3">Comandas de mesa abertas, com os pedidos já lançados e o total corrente. Quando o cliente vier até o caixa pagar, feche a comanda aqui.</p>
-                    <div id="lista-pedidos-balcao" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+                    <div id="lista-pedidos-balcao" class="space-y-3 overflow-y-auto"></div>
                 </div>
 
                 <div id="subtab-retirada-conteudo" style="display:none;">
                     <div class="flex justify-between items-center mb-5 flex-wrap gap-3"><h3 class="text-xl font-semibold text-orange-400"><i class="fas fa-shopping-bag"></i> Pedidos para retirada</h3><div class="relative w-full sm:w-80"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input type="text" id="busca-retirada" oninput="renderPedidosRetiradaAdmin()" placeholder="Buscar por nome, telefone ou nº do pedido" class="w-full rounded-xl pl-9 pr-3 py-2.5 bg-[#16243c] border border-blue-800 text-white text-sm placeholder-slate-500"></div></div>
                     <p class="text-white/50 text-xs mb-3">Pedidos de retirada já finalizados na cozinha, aguardando o cliente vir buscar na loja. Não são enviados para a área do entregador.</p>
-                    <div id="lista-pedidos-retirada" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+                    <div id="lista-pedidos-retirada" class="space-y-3 overflow-y-auto"></div>
                 </div>
 
                 <div id="subtab-finalizados-conteudo" style="display:none;">
                     <div class="flex justify-between items-center mb-5 flex-wrap gap-3"><h3 class="text-xl font-semibold text-emerald-400"><i class="fas fa-check-double"></i> Pedidos finalizados</h3><div class="relative w-full sm:w-80"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input type="text" id="busca-finalizados" oninput="renderPedidosFinalizadosAdmin()" placeholder="Buscar por nome, telefone, rua, nº do pedido ou comida" class="w-full rounded-xl pl-9 pr-3 py-2.5 bg-[#16243c] border border-blue-800 text-white text-sm placeholder-slate-500"></div></div>
                     <p class="text-white/50 text-xs mb-3">Mostra apenas os pedidos finalizados hoje (a partir da meia-noite). O histórico completo continua disponível na aba Histórico.</p>
-                    <div id="lista-pedidos-finalizados" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+                    <div id="lista-pedidos-finalizados" class="space-y-3 overflow-y-auto"></div>
                 </div>
             </div></div>
 
@@ -10460,146 +10473,72 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             }
         }
 
-        // ==================== SISTEMA DE SINCRONIZAÇÃO DE PROMOÇÕES (MÚLTIPLOS DISPOSITIVOS) ====================
-        // Este sistema garante que TODOS os clientes vejam as promoções atualizadas, mesmo com cache ativo.
-        // Funciona verificando periodicamente se a versão mudou no Supabase e recarregando automaticamente.
+        // ==================== SISTEMA DE SINCRONIZAÇÃO DE PROMOÇÕES (OTIMIZADO) ====================
+        // Versão otimizada: reduz requisições e operações DOM caras
         (function czkSistemaAtualizacaoPromocoes() {
             const STORAGE_KEY_VERSAO = 'czk-promo-versao-local';
-            const STORAGE_KEY_DATA = 'czk-promo-data-local';
-            const INTERVALO_VERIFICACAO = 120000; // 2 minutos
-            
-            console.log('✅ Sistema de sincronização de promoções iniciado');
+            const INTERVALO_VERIFICACAO = 300000; // 5 minutos (ao invés de 2)
+            let ultimaVersaoChecada = null;
+            let verificacaoEmProgresso = false;
 
-            // 1. OBTER VERSÃO ATUAL DO BANCO
+            console.log('✅ Sistema de sincronização de promoções iniciado (OTIMIZADO)');
+
+            // 1. OBTER VERSÃO ATUAL DO BANCO (com cache local)
             async function obterVersaoServidor() {
+                // Evitar requisição simultânea se já está buscando
+                if (verificacaoEmProgresso) return null;
+                
+                verificacaoEmProgresso = true;
                 try {
-                    // Buscar última versão inserida
                     const { data, error } = await czkSupabase
                         .from('czk_promo_versao')
-                        .select('versao,data_atualizacao')
+                        .select('versao')
                         .order('id', { ascending: false })
                         .limit(1);
 
-                    if (error) {
-                        console.warn('[Promo Sync] Erro ao obter versão:', error);
-                        return null;
-                    }
+                    if (error || !data || data.length === 0) return null;
 
-                    if (data && data.length > 0) {
-                        return {
-                            versao: data[0].versao,
-                            dataAtualizacao: data[0].data_atualizacao,
-                            timestamp: new Date(data[0].data_atualizacao).getTime()
-                        };
-                    }
-                    return null;
+                    return data[0].versao;
                 } catch (erro) {
-                    console.error('[Promo Sync] Erro ao obter versão servidor:', erro);
+                    console.error('[Promo Sync] Erro:', erro);
                     return null;
+                } finally {
+                    verificacaoEmProgresso = false;
                 }
             }
 
-            // 2. LIMPAR CACHE DO SERVICE WORKER
-            async function limparCacheServiceWorker() {
-                if ('caches' in window) {
-                    try {
-                        const cacheNames = await caches.keys();
-                        const todasDeletedas = cacheNames.map(name => caches.delete(name));
-                        await Promise.all(todasDeletedas);
-                        console.log('✅ Cache do Service Worker limpo com sucesso');
-                    } catch (erro) {
-                        console.error('[Promo Sync] Erro ao limpar cache:', erro);
-                    }
-                }
-            }
-
-            // 3. ATUALIZAR URLS COM TIMESTAMP (CACHE-BUSTING)
-            async function atualizarUrlsComTimestamp(timestamp) {
-                try {
-                    // Atualizar todas as imagens e vídeos da pasta /czk-midia/ com novo timestamp
-                    const seletores = [
-                        'img[src*="/storage/v1/object/public/czk-midia"]',
-                        'video[src*="/storage/v1/object/public/czk-midia"]',
-                        'img[data-src*="/storage/v1/object/public/czk-midia"]'
-                    ];
-
-                    seletores.forEach(seletor => {
-                        document.querySelectorAll(seletor).forEach(el => {
-                            const atributo = el.tagName === 'IMG' && el.hasAttribute('data-src') ? 'data-src' : 'src';
-                            let src = el.getAttribute(atributo);
-
-                            if (src) {
-                                // Remove versão anterior se existir
-                                const urlSemVersao = src.split('?v=')[0];
-                                const novaUrl = `${urlSemVersao}?v=${timestamp}`;
-                                el.setAttribute(atributo, novaUrl);
-                            }
-                        });
-                    });
-
-                    // Também atualizar background-images em CSS inline
-                    document.querySelectorAll('[style*="background-image"]').forEach(el => {
-                        let style = el.getAttribute('style');
-                        if (style.includes('/storage/v1/object/public/czk-midia')) {
-                            const urlMatch = style.match(/url\(['"]?([^'")\]]+)['"]?\)/);
-                            if (urlMatch) {
-                                const urlSemVersao = urlMatch[1].split('?v=')[0];
-                                const novaUrl = `url('${urlSemVersao}?v=${timestamp}')`;
-                                style = style.replace(/url\(['"]?[^'")\]]+['"]?\)/, novaUrl);
-                                el.setAttribute('style', style);
-                            }
-                        }
-                    });
-
-                    console.log(`✅ URLs atualizadas com timestamp: ${timestamp}`);
-                } catch (erro) {
-                    console.error('[Promo Sync] Erro ao atualizar URLs:', erro);
-                }
-            }
-
-            // 4. VERIFICAR E SINCRONIZAR ATUALIZAÇÕES
+            // 2. VERSÃO OTIMIZADA: usar localStorage como cache entre abas
             async function verificarAtualizacoes() {
-                try {
-                    const versaoServidor = await obterVersaoServidor();
-                    if (!versaoServidor) return;
+                const versaoLocal = localStorage.getItem(STORAGE_KEY_VERSAO);
+                const versaoServidor = await obterVersaoServidor();
 
-                    const versaoLocal = localStorage.getItem(STORAGE_KEY_VERSAO) || '0.0.0';
-                    const dataLocal = localStorage.getItem(STORAGE_KEY_DATA) || '0';
+                if (!versaoServidor) return; // Sem internet ou erro
 
-                    // Se versão mudou, fazer reload completo
-                    if (versaoServidor.versao !== versaoLocal) {
-                        console.log(`🔄 Nova versão detectada: ${versaoLocal} → ${versaoServidor.versao}`);
-
-                        await limparCacheServiceWorker();
-                        localStorage.setItem(STORAGE_KEY_VERSAO, versaoServidor.versao);
-                        localStorage.setItem(STORAGE_KEY_DATA, versaoServidor.dataAtualizacao);
-
-                        // Recarregar a página em 1 segundo
-                        setTimeout(() => window.location.reload(), 1000);
+                // Se versão mudou, recarregar (mais eficiente que atualizar URL por URL)
+                if (versaoServidor !== versaoLocal) {
+                    console.log(`🔄 Nova versão: ${versaoLocal} → ${versaoServidor}`);
+                    localStorage.setItem(STORAGE_KEY_VERSAO, versaoServidor);
+                    
+                    // Limpar cache de forma não-bloqueante
+                    if ('caches' in window) {
+                        caches.keys().then(names => 
+                            Promise.all(names.map(name => caches.delete(name)))
+                        ).catch(e => console.warn('[Promo Sync] Erro cache:', e));
                     }
-                    // Se data de atualização mudou (promoção atualizada sem versão mudar)
-                    else if (versaoServidor.dataAtualizacao !== dataLocal) {
-                        console.log('🎯 Promoções atualizadas! Sincronizando imagens...');
-
-                        localStorage.setItem(STORAGE_KEY_DATA, versaoServidor.dataAtualizacao);
-                        await atualizarUrlsComTimestamp(versaoServidor.timestamp);
-                    }
-                } catch (erro) {
-                    console.error('[Promo Sync] Erro ao verificar atualizações:', erro);
+                    
+                    // Recarregar após 500ms
+                    setTimeout(() => window.location.reload(), 500);
                 }
             }
 
-            // 5. INICIALIZAR SISTEMA
-            async function inicializar() {
-                console.log('🚀 Inicializando sincronização de promoções...');
-
-                // Verificação inicial
-                await verificarAtualizacoes();
-
-                // Verificações periódicas (a cada 2 minutos)
-                setInterval(verificarAtualizacoes, INTERVALO_VERIFICACAO);
-
-                console.log('✅ Sistema de sincronização de promoções pronto!');
+            // 3. INICIALIZAR (SEM fazer verificação inicial - apenas periódica)
+            function inicializar() {
+                // Primeira verificação após 30 segundos (deixa página carregar antes)
+                setTimeout(() => {
+                    verificarAtualizacoes();
+                    // Depois verifica periodicamente a cada 5 minutos
+                    setInterval(verificarAtualizacoes, INTERVALO_VERIFICACAO);
+                }, 30000);
             }
 
             // Executar quando página carregar
@@ -10609,12 +10548,10 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 inicializar();
             }
 
-            // Expor funções globalmente para debug/teste via console
+            // Expor funções para debug
             window.czkPromoSync = {
                 verificar: verificarAtualizacoes,
-                obterVersao: obterVersaoServidor,
-                limparCache: limparCacheServiceWorker,
-                atualizarUrls: atualizarUrlsComTimestamp
+                obterVersao: obterVersaoServidor
             };
         })();
         // ==================== FIM DO SISTEMA DE SINCRONIZAÇÃO ====================
@@ -14014,7 +13951,32 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             window.location.href = '/admin/';
         }
         function fecharModalAdmin() { document.getElementById("modal-proprietario").style.display = "none"; }
+        function abrirLoginAdmin() { document.getElementById("modal-admin-login").style.display = "flex"; }
+        function fecharModalAdminLogin() { document.getElementById("modal-admin-login").style.display = "none"; }
         function validarAdmin() { if(document.getElementById("senha-admin").value === "admin123") { document.getElementById("modal-proprietario").style.display = "none"; document.getElementById("admin-panel").style.display = "block"; adminLogado = true; devLogado = false; document.getElementById("btn-tab-dev").style.display = "none"; renderPedidosAtivos(); renderControleEntregas(); renderCancelamentosAdmin(); renderPedidosFinalizadosAdmin(); renderPedidosRetiradaAdmin(); renderBalcaoAdmin(); czkAtivarPush('admin', null); atualizarBolinhaSuporte(); atualizarBolinhaEntregador(); } else czkAlert("Senha incorreta!"); }
+        function validarAdminNexo() { 
+            const loginAdmin = document.getElementById("login-admin").value;
+            const senhaAdmin = document.getElementById("senha-admin-new").value;
+            if(loginAdmin === "admin" && senhaAdmin === "admin123") { 
+                document.getElementById("modal-admin-login").style.display = "none"; 
+                document.getElementById("modal-proprietario").style.display = "none"; 
+                document.getElementById("admin-panel").style.display = "block"; 
+                adminLogado = true; 
+                devLogado = false; 
+                document.getElementById("btn-tab-dev").style.display = "none"; 
+                renderPedidosAtivos(); 
+                renderControleEntregas(); 
+                renderCancelamentosAdmin(); 
+                renderPedidosFinalizadosAdmin(); 
+                renderPedidosRetiradaAdmin(); 
+                renderBalcaoAdmin(); 
+                czkAtivarPush('admin', null); 
+                atualizarBolinhaSuporte(); 
+                atualizarBolinhaEntregador(); 
+                document.getElementById("login-admin").value = "";
+                document.getElementById("senha-admin-new").value = "";
+            } else czkAlert("Login ou senha incorretos!"); 
+        }
         function fecharAdmin() { document.getElementById("admin-panel").style.display = "none"; adminLogado = false; devLogado = false; czkLimparSessao(); document.getElementById("btn-tab-dev").style.display = "none"; atualizarBolinhaSuporte(); atualizarBolinhaEntregador(); }
 
         // ===================== Tela cheia da aba Pedidos =====================
