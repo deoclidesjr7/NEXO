@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CZK MAKI</title>
+    <title>NEXO</title>
 
     <!-- ===================== Prévia de link (WhatsApp, redes sociais, etc.) =====================
          Sem essas tags, apps como o WhatsApp só conseguem mostrar o <title> em texto puro, sem
@@ -15654,6 +15654,50 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     czkToggleTelaCheiaPedidos();
                 }
             }, 600);
+        })();
+    </script>
+
+    <!-- Botão flutuante "Subir" — aparece ao rolar para baixo em qualquer tela/painel com scroll,
+         e ao clicar volta suavemente para o topo de onde o usuário rolou. Não mexe em nenhuma
+         outra função existente. -->
+    <button id="czk-btn-subir" onclick="czkVoltarAoTopo()" aria-label="Subir"
+        style="position:fixed; right:16px; bottom:90px; z-index:9999; width:46px; height:46px;
+        border-radius:9999px; background:#1d4ed8; color:#fff; border:none; box-shadow:0 4px 14px rgba(0,0,0,.35);
+        display:none; align-items:center; justify-content:center; cursor:pointer; font-size:18px;
+        transition:opacity .2s ease;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <script>
+        (function () {
+            let czkUltimoElementoRolado = null;
+            const czkBtnSubir = document.getElementById('czk-btn-subir');
+
+            function czkAoRolar(e) {
+                const alvo = e.target;
+                // só reage a elementos de fato roláveis (não o document inteiro sem necessidade)
+                const scrollTop = (alvo === document) ? window.scrollY : (alvo.scrollTop || 0);
+                if (scrollTop > 250) {
+                    czkUltimoElementoRolado = alvo;
+                    czkBtnSubir.style.display = 'flex';
+                } else if (alvo === czkUltimoElementoRolado || alvo === document) {
+                    czkBtnSubir.style.display = 'none';
+                }
+            }
+
+            // "true" no final = fase de captura, necessário pra pegar o scroll de qualquer
+            // painel/modal interno (eles não fazem o evento de scroll "borbulhar" normalmente)
+            document.addEventListener('scroll', czkAoRolar, true);
+            window.addEventListener('scroll', czkAoRolar, true);
+
+            window.czkVoltarAoTopo = function () {
+                const alvo = czkUltimoElementoRolado || document.scrollingElement || document.documentElement;
+                if (alvo && typeof alvo.scrollTo === 'function') {
+                    alvo.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                czkBtnSubir.style.display = 'none';
+            };
         })();
     </script>
 </body>
