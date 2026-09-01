@@ -630,11 +630,15 @@
         #admin-panel.czk-pedidos-tela-cheia #admin-panel-header { display: none !important; }
         #admin-panel.czk-pedidos-tela-cheia { padding: 0 !important; }
         #admin-panel.czk-pedidos-tela-cheia > .max-w-6xl { max-width: 100% !important; margin: 0 !important; height: 100%; }
+        /* Antes o #pedidos-ativos virava um 2º container fixed+overflow-y:auto por cima do
+           #admin-panel (que já tem overflow-y:auto próprio) — dois scrolls sobrepostos e
+           redundantes, o que fazia o scroll dos pedidos travar em alguns navegadores. Agora
+           é só um bloco normal dentro do #admin-panel, que continua sendo o único que rola. */
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos {
-            position: fixed; inset: 0; z-index: 60; margin: 0; overflow-y: auto;
+            margin: 0;
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos > .glass-card-solid {
-            border-radius: 0; border: none; height: 100%; min-height: 100vh;
+            border-radius: 0; border: none; min-height: 100vh;
         }
         /* A barra de sub-abas (Cancelamentos, Em andamento, Suporte, Retirada, Balcão, Finalizados)
            ficava dentro do card que rola inteiro na tela cheia, então ao descer a lista de pedidos
@@ -645,6 +649,19 @@
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar + hr {
             position: sticky; top: 56px; z-index: 5; background: #16233d; margin-top: -1px;
+        }
+        /* Letras/ícones da barra de abas (Cancelamentos, Em andamento, Suporte, Retirada,
+           Balcão, Finalizados) e do botão de tela cheia ficavam azul-escuro em cima do fundo
+           azul-escuro da própria barra — quase invisíveis. Agora tudo em branco. Os ícones que
+           já tinham cor própria (vermelho, laranja, âmbar, verde) continuam como estavam, pois
+           já tinham bom contraste. */
+        #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar .subtab-pedidos-btn,
+        #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar .subtab-pedidos-btn i:not([class*="text-"]),
+        #admin-panel.czk-pedidos-tela-cheia #subtab-btn-andamento,
+        #admin-panel.czk-pedidos-tela-cheia #subtab-btn-andamento i,
+        #admin-panel.czk-pedidos-tela-cheia #btn-tela-cheia-pedidos,
+        #admin-panel.czk-pedidos-tela-cheia #btn-tela-cheia-pedidos i {
+            color: #fff !important;
         }
 
         /* ===== Tema claro (creme), só para os cards de "Pedidos novos" / "Em andamento",
