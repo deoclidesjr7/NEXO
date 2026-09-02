@@ -222,6 +222,7 @@
         body.modo-painel-noite #admin-panel .tab-admin-btn { color: #60a5fa !important; }
         body.modo-painel-noite #admin-panel .tab-admin-btn.bg-blue-900\/40.text-blue-400 { color: #e5e7eb !important; }
         #admin-panel .czk-caixa-valor-pedido { background: transparent !important; border-color: transparent !important; }
+        #admin-panel.czk-pedidos-tela-cheia .czk-caixa-valor-pedido span { color: #2563eb !important; font-weight: 700 !important; }
         .cor-painel-swatch-btn { background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.8); cursor: pointer; }
         .cor-painel-swatch-btn:hover { background: rgba(0,0,0,0.35); }
         .cor-painel-swatch-btn.cor-painel-ativo { border-color: #2563eb !important; background: rgba(37,99,235,0.18); color: #fff; }
@@ -639,17 +640,20 @@
            Quando ativa (classe no #admin-panel), some com o cabeçalho "Painel de Controle" e a barra de
            abas Pedidos/Configurações, e o cartão de pedidos passa a ocupar 100% da tela por cima de tudo. */
         #admin-panel.czk-pedidos-tela-cheia #admin-panel-header { display: none !important; }
-        #admin-panel.czk-pedidos-tela-cheia { padding: 0 !important; }
-        #admin-panel.czk-pedidos-tela-cheia > .max-w-6xl { max-width: 100% !important; margin: 0 !important; height: 100%; }
-        /* Antes o #pedidos-ativos virava um 2º container fixed+overflow-y:auto por cima do
-           #admin-panel (que já tem overflow-y:auto próprio) — dois scrolls sobrepostos e
-           redundantes, o que fazia o scroll dos pedidos travar em alguns navegadores. Agora
-           é só um bloco normal dentro do #admin-panel, que continua sendo o único que rola. */
+        #admin-panel.czk-pedidos-tela-cheia { padding: 0 !important; overflow-y: hidden !important; }
+        #admin-panel.czk-pedidos-tela-cheia > .max-w-6xl { max-width: 100% !important; margin: 0 !important; height: 100%; display: flex; flex-direction: column; }
+        /* Antes cada coluna (Pedidos novos / Em andamento) tinha scroll próprio travado em 55vh,
+           sobrando espaço em branco embaixo. Depois, ao tirar esse limite, quem passou a rolar foi
+           a página inteira (um scroll só). Agora o esquema é: o painel para de rolar como um todo
+           (overflow:hidden acima) e vira uma coluna flexível; o card de pedidos ocupa 100% dessa
+           altura; e cada coluna de pedidos volta a ter seu PRÓPRIO scroll, só que agora esticando
+           até o fim da tela de verdade (calculado via flexbox), em vez de travado em 55vh fixo. */
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos {
-            margin: 0;
+            margin: 0; flex: 1; min-height: 0; display: flex; flex-direction: column;
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos > .glass-card-solid {
-            border-radius: 0; border: none; min-height: 100vh;
+            border-radius: 0; border: none; height: 100%; flex: 1; min-height: 0;
+            display: flex; flex-direction: column; overflow: hidden;
         }
         /* Logo NEXO desaparece em tela cheia */
         #admin-panel.czk-pedidos-tela-cheia .admin-panel-logo-badge {
@@ -661,10 +665,20 @@
            ela "sumia" (rolava pra fora da tela junto com o resto). Agora fica fixa no topo. */
         #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar {
             position: sticky; top: 0; z-index: 5; background: #16233d;
-            margin: -10px -14px 4px; padding: 10px 14px 12px;
+            margin: -10px -14px 4px; padding: 10px 14px 12px; flex-shrink: 0;
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar + hr {
-            position: sticky; top: 56px; z-index: 5; background: #16233d; margin-top: -1px;
+            position: sticky; top: 56px; z-index: 5; background: #16233d; margin-top: -1px; flex-shrink: 0;
+        }
+        /* Cada aba de conteúdo (Cancelamentos, Suporte, Retirada, Balcão, Finalizados) ocupa
+           o espaço restante da tela e rola por conta própria (a de "Em andamento" tem seu
+           próprio tratamento mais abaixo, com duas colunas independentes). */
+        #admin-panel.czk-pedidos-tela-cheia #subtab-cancelamentos-conteudo,
+        #admin-panel.czk-pedidos-tela-cheia #subtab-suporte-conteudo,
+        #admin-panel.czk-pedidos-tela-cheia #subtab-retirada-conteudo,
+        #admin-panel.czk-pedidos-tela-cheia #subtab-balcao-conteudo,
+        #admin-panel.czk-pedidos-tela-cheia #subtab-finalizados-conteudo {
+            flex: 1; min-height: 0; overflow-y: auto;
         }
         /* Letras/ícones da barra de abas (Cancelamentos, Em andamento, Suporte, Retirada,
            Balcão, Finalizados) e do botão de tela cheia ficavam azul-escuro em cima do fundo
@@ -690,6 +704,24 @@
            nada muda: os cards continuam no tema escuro de sempre. */
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo {
             background: #f3e8ca; border-radius: 16px; padding: 18px; margin: -6px -6px 0;
+            flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+        }
+        #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo > .flex.justify-between.items-center.mb-5.flex-wrap.gap-3 {
+            flex-shrink: 0;
+        }
+        #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .grid.md\:grid-cols-2.gap-5 {
+            flex: 1; min-height: 0;
+        }
+        #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .grid.md\:grid-cols-2.gap-5 > div {
+            display: flex; flex-direction: column; min-height: 0; height: 100%;
+        }
+        #admin-panel.czk-pedidos-tela-cheia #titulo-coluna-novos,
+        #admin-panel.czk-pedidos-tela-cheia #titulo-coluna-andamento {
+            flex-shrink: 0;
+        }
+        #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos,
+        #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos {
+            flex: 1; min-height: 0; max-height: none !important; overflow-y: auto !important;
         }
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo input[class*="bg-[#16243c]"] {
             background: #fffdf7 !important; border-color: #e5decb !important; color: #111827 !important;
@@ -735,15 +767,6 @@
             background: #fffdf7 !important; border-color: #e5decb !important; color: #374151 !important;
         }
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .border-white\/10 { border-color: #e5decb !important; }
-        /* Na tela expandida as duas colunas (Pedidos novos / Em andamento) não ficam mais presas
-           a 55vh com scroll próprio — elas crescem livremente e quem rola é o painel inteiro
-           (#pedidos-ativos, já fixed+overflow-y:auto), como na referência: um scroll só, contínuo,
-           pra baixo, sem fim. Fora da tela expandida nada muda (continua o max-h-[55vh] de sempre). */
-        #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-novos,
-        #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-ativos {
-            max-height: none !important;
-            overflow-y: visible !important;
-        }
         /* Aviso "cliente não encontrado": na tela expandida vira um quadro com fundo rosado
            (como na referência), em vez do texto vermelho simples usado no tema escuro normal. */
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .czk-banner-nao-encontrado {
@@ -765,6 +788,10 @@
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 4px !important; }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos > div,
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos > div { padding: 6px 10px !important; }
+        #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos > div > div:has(> .czk-caixa-valor-pedido),
+        #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos > div > div:has(> .czk-caixa-valor-pedido) {
+            margin-top: 6px !important; padding-top: 6px !important;
+        }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos .mb-1,
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos .mb-1 { margin-bottom: 2px !important; }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos .mb-2,
