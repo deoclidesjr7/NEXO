@@ -732,8 +732,8 @@
            pra baixo, sem fim. Fora da tela expandida nada muda (continua o max-h-[55vh] de sempre). */
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-novos,
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-ativos {
-            max-height: none !important;
-            overflow: visible !important;
+            max-height: 55vh !important;
+            overflow-y: auto !important;
         }
         /* Aviso "cliente não encontrado": na tela expandida vira um quadro com fundo rosado
            (como na referência), em vez do texto vermelho simples usado no tema escuro normal. */
@@ -6969,6 +6969,89 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         function czkBadgeRetiradaPedido(p) {
             return p.tipoEntrega === 'retirada' ? ` <span class="bg-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full align-middle"><i class="fas fa-store"></i> RETIRADA</span>` : '';
         }
+        // ===== OPÇÕES AVANÇADAS DE PEDIDOS =====
+        function abrirMenuOpcoes(pedidoId, event) {
+            event.stopPropagation();
+            const menu = document.getElementById(`menu-opcoes-${pedidoId}`);
+            if(menu) {
+                menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+            }
+        }
+        function fecharMenuOpcoes(pedidoId) {
+            const menu = document.getElementById(`menu-opcoes-${pedidoId}`);
+            if(menu) menu.style.display = 'none';
+        }
+        
+        function renderOpcoesPedido(pedidoId) {
+            return `<div id="menu-opcoes-${pedidoId}" style="display: none; position: absolute; top: 40px; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 100; min-width: 220px; flex-direction: column;" class="absolute">
+                <button onclick="abrirChatCliente(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
+                    <span>💬</span> Abrir Chat c/ Cliente
+                </button>
+                <button onclick="abrirAjustePrazo(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
+                    <span>⏱️</span> Ajustar Prazo de Preparo
+                </button>
+                <button onclick="forcarCancelamentoAdmin(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #d32f2f; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#ffebee'" onmouseout="this.style.background='transparent'">
+                    <span>🚫</span> Forçar Cancelamento Admin
+                </button>
+                <button onclick="abrirNotaInterna(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
+                    <span>📝</span> Adicionar Nota Interna
+                </button>
+                <button onclick="definirPrioridadeAlta(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #ff9800; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#fff3e0'" onmouseout="this.style.background='transparent'">
+                    <span>⭐</span> Prioridade Alta
+                </button>
+            </div>`;
+        }
+        
+        function abrirChatCliente(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                czkAlert(`Abrindo chat com ${pedido.clienteNome}...`);
+                fecharMenuOpcoes(pedidoId);
+            }
+        }
+        function abrirAjustePrazo(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                const novoPrazo = prompt(`Novo prazo de preparo (minutos):\nAtual: ${pedido.tempoPreparo || 20} min`, pedido.tempoPreparo || 20);
+                if(novoPrazo && !isNaN(novoPrazo)) {
+                    pedido.tempoPreparo = parseInt(novoPrazo);
+                    czkAlert(`Prazo ajustado para ${novoPrazo} minutos! Cliente será notificado.`);
+                    renderPedidosAtivos();
+                }
+                fecharMenuOpcoes(pedidoId);
+            }
+        }
+        function forcarCancelamentoAdmin(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido && confirm(`Cancelar pedido ${formatarNumeroPedido(pedido)} (${pedido.clienteNome})?`)) {
+                atualizarStatusPedido(pedidoId, "Cancelado");
+                czkAlert("Pedido cancelado pela administração!");
+                renderPedidosAtivos();
+            }
+            fecharMenuOpcoes(pedidoId);
+        }
+        function abrirNotaInterna(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                const nota = prompt("Nota interna para a cozinha:", pedido.notaInterna || "");
+                if(nota !== null) {
+                    pedido.notaInterna = nota;
+                    czkAlert("Nota adicionada!");
+                    renderPedidosAtivos();
+                }
+                fecharMenuOpcoes(pedidoId);
+            }
+        }
+        function definirPrioridadeAlta(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                pedido.prioridade = pedido.prioridade === 'alta' ? 'normal' : 'alta';
+                czkAlert(pedido.prioridade === 'alta' ? "Pedido marcado como PRIORIDADE ALTA!" : "Prioridade removida");
+                renderPedidosAtivos();
+            }
+            fecharMenuOpcoes(pedidoId);
+        }
+
         function renderPedidosAtivos() {
             const termoBusca = (document.getElementById("busca-pedidos-ativos")?.value || "").trim().toLowerCase();
             const bateComBusca = (p) => {
@@ -6992,14 +7075,14 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const contadorNovos = document.getElementById("contador-pedidos-novos");
             if(contadorNovos) contadorNovos.innerText = novos.length;
             if(containerNovos) {
-                containerNovos.innerHTML = novos.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido novo.</p>" : novos.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente ? 'border-red-600 ring-1 ring-red-600/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-yellow-600/60')}">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}<div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-yellow-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs text-yellow-400 font-bold mt-1">Status: ${p.status}</p></div><div><p class="font-bold text-blue-400">R$ ${p.total.toFixed(2)}</p><button onclick="aceitarPedidoAdmin(${p.id})" class="bg-yellow-400 hover:bg-yellow-300 text-[#16233d] px-4 py-1.5 rounded-lg text-sm mt-2 font-bold"><i class="fas fa-check"></i> Aceitar Pedido</button><button onclick="imprimirPedido(${p.id})" class="bg-blue-700 hover:bg-blue-600 px-4 py-1.5 rounded-lg text-sm mt-2 ml-1 font-bold"><i class="fas fa-print"></i></button></div></div><div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div></div>`).join('');
+                containerNovos.innerHTML = novos.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido novo.</p>" : novos.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente" style="position: relative;"><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" ? 'border-red-600 ring-1 ring-red-600/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-yellow-600/60')}" style="position: relative;">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}<div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; position: relative;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-yellow-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs text-yellow-400 font-bold mt-1">Status: ${p.status}</p></div></div><div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div><div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 12px; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;"><button onclick="aceitarPedidoAdmin(${p.id})" class="bg-yellow-400 hover:bg-yellow-300 text-[#16233d] px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-check"></i> Aceitar Pedido</button><div style="background: #dc2626; border: 2px solid #b91c1c; border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; gap: 6px;"><span style="color: white; font-weight: 600; font-size: 13px;">R$ ${p.total.toFixed(2)}</span><button onclick="imprimirPedido(${p.id})" style="background: #1e3a8a; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center;"><i class="fas fa-print"></i></button></div></div></div>`).join('');
             }
 
             const container = document.getElementById("lista-pedidos-ativos");
             const contadorAndamento = document.getElementById("contador-pedidos-andamento");
             if(contadorAndamento) contadorAndamento.innerText = andamento.length;
             if(container) {
-                container.innerHTML = andamento.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido em andamento.</p>" : andamento.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente ? 'border-red-600 ring-1 ring-red-600/60' : (p.status === 'Cliente não encontrado' ? 'border-red-500 ring-1 ring-red-500/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-blue-800/50'))}">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}${p.status === 'Cliente não encontrado' ? `<p class="czk-banner-nao-encontrado text-red-400 text-xs font-bold mb-2"><i class="fas fa-user-slash"></i> O entregador não encontrou o cliente — pedido voltou pra loja. Reatribua um entregador ou entre em contato.</p>` : ''}<div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-blue-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs ${p.status === 'Cliente não encontrado' ? 'text-red-400' : 'text-blue-300'} font-bold mt-1">Status: ${p.status}</p></div><div><p class="font-bold text-blue-400">R$ ${p.total.toFixed(2)}</p><button onclick="imprimirPedido(${p.id})" class="bg-blue-700 hover:bg-blue-600 px-4 py-1.5 rounded-lg text-sm mt-2 font-bold"><i class="fas fa-print"></i></button></div></div><div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/10">${p.tipoEntrega === 'retirada' ? `<p class="text-xs text-orange-300"><i class="fas fa-store"></i> Pedido de retirada — não precisa atribuir entregador.</p>` : (p.tipoEntrega === 'mesa' ? `<select id=\"garcom-direto-${p.id}\" class=\"rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]\"><option value=\"\">Selecione o garçom...</option>${garcons.map(g => `<option value=\"${g.login}\">${g.nome || g.login}</option>`).join('')}</select><button onclick=\"atribuirAoGarcomAdmin(${p.id})\" class=\"bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold\"><i class=\"fas fa-concierge-bell\"></i> Atribuir</button>` : `<select id="entregador-direto-${p.id}" class="rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]"><option value="">Selecione o entregador...</option>${entregadores.map(e => `<option value="${e.login}">${e.login}</option>`).join('')}</select><button onclick="entregarParaEntregadorAdmin(${p.id})" class="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-motorcycle"></i> Entregar para</button>`)}<button onclick="finalizarPedidoAdmin(${p.id})" class="bg-white hover:bg-gray-200 text-[#16233d] border border-blue-300 px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-check-double"></i> Finalizar Pedido</button></div>${p.tipoEntrega === 'mesa' ? `<div class="mt-3 pt-3 border-t border-white/10"><button onclick="toggleItensAndamento(${p.id})" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg"><i class="fas fa-concierge-bell"></i> ${andamentoItensExpandidos[p.id] ? 'Esconder itens' : 'Servir itens'}</button>${andamentoItensExpandidos[p.id] ? `<div class="mt-2">${gerarStatusItensPedidosMesaHTML([p])}</div>` : ''}</div>` : ''}<div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div></div>`).join('');
+                container.innerHTML = andamento.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido em andamento.</p>" : andamento.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente" style="position: relative;"><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" ? 'border-red-600 ring-1 ring-red-600/60' : (p.status === 'Cliente não encontrado' ? 'border-red-500 ring-1 ring-red-500/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-blue-800/50'))}">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}${p.status === 'Cliente não encontrado' ? `<p class="czk-banner-nao-encontrado text-red-400 text-xs font-bold mb-2"><i class="fas fa-user-slash"></i> O entregador não encontrou o cliente — pedido voltou pra loja. Reatribua um entregador ou entre em contato.</p>` : ''}<div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-blue-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs ${p.status === 'Cliente não encontrado' ? 'text-red-400' : 'text-blue-300'} font-bold mt-1">Status: ${p.status}</p></div></div><div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 12px; padding-top: 12px; display: flex; justify-content: flex-end;"><div style="background: #dc2626; border: 2px solid #b91c1c; border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; gap: 6px;"><span style="color: white; font-weight: 600; font-size: 13px;">R$ ${p.total.toFixed(2)}</span><button onclick="imprimirPedido(${p.id})" style="background: #1e3a8a; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center;"><i class="fas fa-print"></i></button></div></div><div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/10">${p.tipoEntrega === 'retirada' ? `<p class="text-xs text-orange-300"><i class="fas fa-store"></i> Pedido de retirada — não precisa atribuir entregador.</p>` : (p.tipoEntrega === 'mesa' ? `<select id=\"garcom-direto-${p.id}\" class=\"rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]\"><option value=\"\">Selecione o garçom...</option>${garcons.map(g => `<option value=\"${g.login}\">${g.nome || g.login}</option>`).join('')}</select><button onclick=\"atribuirAoGarcomAdmin(${p.id})\" class=\"bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold\"><i class=\"fas fa-concierge-bell\"></i> Atribuir</button>` : `<select id="entregador-direto-${p.id}" class="rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]"><option value="">Selecione o entregador...</option>${entregadores.map(e => `<option value="${e.login}">${e.login}</option>`).join('')}</select><button onclick="entregarParaEntregadorAdmin(${p.id})" class="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-motorcycle"></i> Entregar para</button>`)}<button onclick="finalizarPedidoAdmin(${p.id})" class="bg-white hover:bg-gray-200 text-[#16233d] border border-blue-300 px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-check-double"></i> Finalizar Pedido</button></div>${p.tipoEntrega === 'mesa' ? `<div class="mt-3 pt-3 border-t border-white/10"><button onclick="toggleItensAndamento(${p.id})" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg"><i class="fas fa-concierge-bell"></i> ${andamentoItensExpandidos[p.id] ? 'Esconder itens' : 'Servir itens'}</button>${andamentoItensExpandidos[p.id] ? `<div class="mt-2">${gerarStatusItensPedidosMesaHTML([p])}</div>` : ''}</div>` : ''}<div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div></div>`).join('');
             }
         }
         function aceitarPedidoAdmin(pedidoId) { atualizarStatusPedido(pedidoId, "Em produção"); }
