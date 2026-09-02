@@ -219,7 +219,12 @@
         .cor-painel-swatch-btn { background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.8); cursor: pointer; }
         .cor-painel-swatch-btn:hover { background: rgba(0,0,0,0.35); }
         .cor-painel-swatch-btn.cor-painel-ativo { border-color: #2563eb !important; background: rgba(37,99,235,0.18); color: #fff; }
-        .cor-painel-swatch { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); display: inline-block; }
+        /* Cores específicas dos botões de cor painel */
+        #cor-painel-btn-dia { background: #FFF6E4; color: #000 !important; }
+        #cor-painel-btn-dia:hover { background: #ffe8c2; }
+        #cor-painel-btn-noite { background: #101a2c; color: #fff !important; }
+        #cor-painel-btn-noite:hover { background: #1a2844; }
+        .cor-painel-swatch { width: 32px; height: 32px; border-radius: 4px; border: 2px solid #999; display: inline-block; }
         /* Itens do menu do cliente (Meus Endereços/Configurações/Meus Pedidos/Suporte): fundo branco com
            leve destaque só no hover — usa classe própria pra não ser pega pela regra de botões azuis abaixo */
         .czk-dropdown-item { transition: background 0.15s ease; }
@@ -630,12 +635,21 @@
         #admin-panel.czk-pedidos-tela-cheia #admin-panel-header { display: none !important; }
         #admin-panel.czk-pedidos-tela-cheia { padding: 0 !important; }
         #admin-panel.czk-pedidos-tela-cheia > .max-w-6xl { max-width: 100% !important; margin: 0 !important; height: 100%; }
+        /* Antes o #pedidos-ativos virava um 2º container fixed+overflow-y:auto por cima do
+           #admin-panel (que já tem overflow-y:auto próprio) — dois scrolls sobrepostos e
+           redundantes, o que fazia o scroll dos pedidos travar em alguns navegadores. Agora
+           é só um bloco normal dentro do #admin-panel, que continua sendo o único que rola. */
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos {
-            position: fixed; inset: 0; z-index: 60; margin: 0; overflow-y: auto;
+            margin: 0;
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos > .glass-card-solid {
-            border-radius: 0; border: none; height: 100%; min-height: 100vh;
+            border-radius: 0; border: none; min-height: 100vh;
         }
+        /* Logo NEXO desaparece em tela cheia */
+        #admin-panel.czk-pedidos-tela-cheia .admin-panel-logo-badge {
+            display: none !important;
+        }
+
         /* A barra de sub-abas (Cancelamentos, Em andamento, Suporte, Retirada, Balcão, Finalizados)
            ficava dentro do card que rola inteiro na tela cheia, então ao descer a lista de pedidos
            ela "sumia" (rolava pra fora da tela junto com o resto). Agora fica fixa no topo. */
@@ -645,6 +659,19 @@
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar + hr {
             position: sticky; top: 56px; z-index: 5; background: #16233d; margin-top: -1px;
+        }
+        /* Letras/ícones da barra de abas (Cancelamentos, Em andamento, Suporte, Retirada,
+           Balcão, Finalizados) e do botão de tela cheia ficavam azul-escuro em cima do fundo
+           azul-escuro da própria barra — quase invisíveis. Agora tudo em branco. Os ícones que
+           já tinham cor própria (vermelho, laranja, âmbar, verde) continuam como estavam, pois
+           já tinham bom contraste. */
+        #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar .subtab-pedidos-btn,
+        #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar .subtab-pedidos-btn i:not([class*="text-"]),
+        #admin-panel.czk-pedidos-tela-cheia #subtab-btn-andamento,
+        #admin-panel.czk-pedidos-tela-cheia #subtab-btn-andamento i,
+        #admin-panel.czk-pedidos-tela-cheia #btn-tela-cheia-pedidos,
+        #admin-panel.czk-pedidos-tela-cheia #btn-tela-cheia-pedidos i {
+            color: #fff !important;
         }
 
         /* ===== Tema claro (creme), só para os cards de "Pedidos novos" / "Em andamento",
@@ -705,8 +732,8 @@
            pra baixo, sem fim. Fora da tela expandida nada muda (continua o max-h-[55vh] de sempre). */
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-novos,
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-ativos {
-            max-height: none !important;
-            overflow: visible !important;
+            max-height: 55vh !important;
+            overflow-y: auto !important;
         }
         /* Aviso "cliente não encontrado": na tela expandida vira um quadro com fundo rosado
            (como na referência), em vez do texto vermelho simples usado no tema escuro normal. */
@@ -917,7 +944,7 @@
         /* ===== Bolinha flutuante de conversas de suporte (aparece em qualquer tela do admin) ===== */
         #suporte-float-bubble {
             position: fixed;
-            width: 60px; height: 60px;
+            width: 50px; height: 50px;
             border-radius: 50%;
             background: linear-gradient(145deg, #1d4ed8, #1e3a8a);
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5), 0 0 0 3px rgba(59,130,246,0.25);
@@ -960,7 +987,7 @@
         /* ===== Bolinha flutuante de chat com entregadores (aparece em qualquer tela do admin) ===== */
         #entregador-float-bubble {
             position: fixed;
-            width: 60px; height: 60px;
+            width: 50px; height: 50px;
             border-radius: 50%;
             background: linear-gradient(145deg, #ca8a04, #78350f);
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5), 0 0 0 3px rgba(202,138,4,0.25);
@@ -1685,7 +1712,7 @@
                      topo, separadas por uma linha, para não misturar visualmente com a lista de pedidos) -->
                 <div id="pedidos-subtabs-bar" class="flex gap-2 mb-4 flex-wrap">
                     <button id="subtab-btn-cancelamentos" onclick="switchSubTabPedidos('cancelamentos')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-ban text-red-400"></i> Cancelamentos <span id="contador-cancelamentos-badge" class="hidden bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
-                    <button id="subtab-btn-andamento" onclick="switchSubTabPedidos('andamento')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full bg-blue-900/40 text-blue-400 text-sm font-semibold flex items-center gap-2"><i class="fas fa-fire"></i> Em andamento</button>
+                    <button id="subtab-btn-andamento" onclick="switchSubTabPedidos('andamento')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-fire"></i> Em andamento</button>
                     <button id="subtab-btn-suporte" onclick="switchSubTabPedidos('suporte')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-comment-dots"></i> Conversas de suporte <span id="contador-suporte-badge" class="hidden bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-retirada" onclick="switchSubTabPedidos('retirada')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-shopping-bag text-orange-400"></i> Retirada <span id="contador-retirada-badge" class="hidden bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-balcao" onclick="switchSubTabPedidos('balcao')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-cash-register text-amber-400"></i> Balcão <span id="contador-balcao-badge" class="hidden bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
@@ -6942,6 +6969,89 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         function czkBadgeRetiradaPedido(p) {
             return p.tipoEntrega === 'retirada' ? ` <span class="bg-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full align-middle"><i class="fas fa-store"></i> RETIRADA</span>` : '';
         }
+        // ===== OPÇÕES AVANÇADAS DE PEDIDOS =====
+        function abrirMenuOpcoes(pedidoId, event) {
+            event.stopPropagation();
+            const menu = document.getElementById(`menu-opcoes-${pedidoId}`);
+            if(menu) {
+                menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+            }
+        }
+        function fecharMenuOpcoes(pedidoId) {
+            const menu = document.getElementById(`menu-opcoes-${pedidoId}`);
+            if(menu) menu.style.display = 'none';
+        }
+        
+        function renderOpcoesPedido(pedidoId) {
+            return `<div id="menu-opcoes-${pedidoId}" style="display: none; position: absolute; top: 40px; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 100; min-width: 220px; flex-direction: column;" class="absolute">
+                <button onclick="abrirChatCliente(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
+                    <span>💬</span> Abrir Chat c/ Cliente
+                </button>
+                <button onclick="abrirAjustePrazo(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
+                    <span>⏱️</span> Ajustar Prazo de Preparo
+                </button>
+                <button onclick="forcarCancelamentoAdmin(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #d32f2f; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#ffebee'" onmouseout="this.style.background='transparent'">
+                    <span>🚫</span> Forçar Cancelamento Admin
+                </button>
+                <button onclick="abrirNotaInterna(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
+                    <span>📝</span> Adicionar Nota Interna
+                </button>
+                <button onclick="definirPrioridadeAlta(${pedidoId})" style="padding: 10px 14px; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #ff9800; display: flex; align-items: center; gap: 10px;" onmouseover="this.style.background='#fff3e0'" onmouseout="this.style.background='transparent'">
+                    <span>⭐</span> Prioridade Alta
+                </button>
+            </div>`;
+        }
+        
+        function abrirChatCliente(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                czkAlert(`Abrindo chat com ${pedido.clienteNome}...`);
+                fecharMenuOpcoes(pedidoId);
+            }
+        }
+        function abrirAjustePrazo(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                const novoPrazo = prompt(`Novo prazo de preparo (minutos):\nAtual: ${pedido.tempoPreparo || 20} min`, pedido.tempoPreparo || 20);
+                if(novoPrazo && !isNaN(novoPrazo)) {
+                    pedido.tempoPreparo = parseInt(novoPrazo);
+                    czkAlert(`Prazo ajustado para ${novoPrazo} minutos! Cliente será notificado.`);
+                    renderPedidosAtivos();
+                }
+                fecharMenuOpcoes(pedidoId);
+            }
+        }
+        function forcarCancelamentoAdmin(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido && confirm(`Cancelar pedido ${formatarNumeroPedido(pedido)} (${pedido.clienteNome})?`)) {
+                atualizarStatusPedido(pedidoId, "Cancelado");
+                czkAlert("Pedido cancelado pela administração!");
+                renderPedidosAtivos();
+            }
+            fecharMenuOpcoes(pedidoId);
+        }
+        function abrirNotaInterna(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                const nota = prompt("Nota interna para a cozinha:", pedido.notaInterna || "");
+                if(nota !== null) {
+                    pedido.notaInterna = nota;
+                    czkAlert("Nota adicionada!");
+                    renderPedidosAtivos();
+                }
+                fecharMenuOpcoes(pedidoId);
+            }
+        }
+        function definirPrioridadeAlta(pedidoId) {
+            const pedido = historicoPedidos.find(p => p.id == pedidoId);
+            if(pedido) {
+                pedido.prioridade = pedido.prioridade === 'alta' ? 'normal' : 'alta';
+                czkAlert(pedido.prioridade === 'alta' ? "Pedido marcado como PRIORIDADE ALTA!" : "Prioridade removida");
+                renderPedidosAtivos();
+            }
+            fecharMenuOpcoes(pedidoId);
+        }
+
         function renderPedidosAtivos() {
             const termoBusca = (document.getElementById("busca-pedidos-ativos")?.value || "").trim().toLowerCase();
             const bateComBusca = (p) => {
@@ -6965,14 +7075,14 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const contadorNovos = document.getElementById("contador-pedidos-novos");
             if(contadorNovos) contadorNovos.innerText = novos.length;
             if(containerNovos) {
-                containerNovos.innerHTML = novos.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido novo.</p>" : novos.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente ? 'border-red-600 ring-1 ring-red-600/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-yellow-600/60')}">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}<div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-yellow-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs text-yellow-400 font-bold mt-1">Status: ${p.status}</p></div><div><p class="font-bold text-blue-400">R$ ${p.total.toFixed(2)}</p><button onclick="aceitarPedidoAdmin(${p.id})" class="bg-yellow-400 hover:bg-yellow-300 text-[#16233d] px-4 py-1.5 rounded-lg text-sm mt-2 font-bold"><i class="fas fa-check"></i> Aceitar Pedido</button><button onclick="imprimirPedido(${p.id})" class="bg-blue-700 hover:bg-blue-600 px-4 py-1.5 rounded-lg text-sm mt-2 ml-1 font-bold"><i class="fas fa-print"></i></button></div></div><div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div></div>`).join('');
+                containerNovos.innerHTML = novos.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido novo.</p>" : novos.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente" style="position: relative;"><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" ? 'border-red-600 ring-1 ring-red-600/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-yellow-600/60')}" style="position: relative;">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}<div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; position: relative;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-yellow-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs text-yellow-400 font-bold mt-1">Status: ${p.status}</p></div></div><div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div><div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 12px; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;"><button onclick="aceitarPedidoAdmin(${p.id})" class="bg-yellow-400 hover:bg-yellow-300 text-[#16233d] px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-check"></i> Aceitar Pedido</button><div style="background: #dc2626; border: 2px solid #b91c1c; border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; gap: 6px;"><span style="color: white; font-weight: 600; font-size: 13px;">R$ ${p.total.toFixed(2)}</span><button onclick="imprimirPedido(${p.id})" style="background: #1e3a8a; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center;"><i class="fas fa-print"></i></button></div></div></div>`).join('');
             }
 
             const container = document.getElementById("lista-pedidos-ativos");
             const contadorAndamento = document.getElementById("contador-pedidos-andamento");
             if(contadorAndamento) contadorAndamento.innerText = andamento.length;
             if(container) {
-                container.innerHTML = andamento.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido em andamento.</p>" : andamento.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente ? 'border-red-600 ring-1 ring-red-600/60' : (p.status === 'Cliente não encontrado' ? 'border-red-500 ring-1 ring-red-500/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-blue-800/50'))}">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}${p.status === 'Cliente não encontrado' ? `<p class="czk-banner-nao-encontrado text-red-400 text-xs font-bold mb-2"><i class="fas fa-user-slash"></i> O entregador não encontrou o cliente — pedido voltou pra loja. Reatribua um entregador ou entre em contato.</p>` : ''}<div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-blue-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs ${p.status === 'Cliente não encontrado' ? 'text-red-400' : 'text-blue-300'} font-bold mt-1">Status: ${p.status}</p></div><div><p class="font-bold text-blue-400">R$ ${p.total.toFixed(2)}</p><button onclick="imprimirPedido(${p.id})" class="bg-blue-700 hover:bg-blue-600 px-4 py-1.5 rounded-lg text-sm mt-2 font-bold"><i class="fas fa-print"></i></button></div></div><div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/10">${p.tipoEntrega === 'retirada' ? `<p class="text-xs text-orange-300"><i class="fas fa-store"></i> Pedido de retirada — não precisa atribuir entregador.</p>` : (p.tipoEntrega === 'mesa' ? `<select id=\"garcom-direto-${p.id}\" class=\"rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]\"><option value=\"\">Selecione o garçom...</option>${garcons.map(g => `<option value=\"${g.login}\">${g.nome || g.login}</option>`).join('')}</select><button onclick=\"atribuirAoGarcomAdmin(${p.id})\" class=\"bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold\"><i class=\"fas fa-concierge-bell\"></i> Atribuir</button>` : `<select id="entregador-direto-${p.id}" class="rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]"><option value="">Selecione o entregador...</option>${entregadores.map(e => `<option value="${e.login}">${e.login}</option>`).join('')}</select><button onclick="entregarParaEntregadorAdmin(${p.id})" class="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-motorcycle"></i> Entregar para</button>`)}<button onclick="finalizarPedidoAdmin(${p.id})" class="bg-white hover:bg-gray-200 text-[#16233d] border border-blue-300 px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-check-double"></i> Finalizar Pedido</button></div>${p.tipoEntrega === 'mesa' ? `<div class="mt-3 pt-3 border-t border-white/10"><button onclick="toggleItensAndamento(${p.id})" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg"><i class="fas fa-concierge-bell"></i> ${andamentoItensExpandidos[p.id] ? 'Esconder itens' : 'Servir itens'}</button>${andamentoItensExpandidos[p.id] ? `<div class="mt-2">${gerarStatusItensPedidosMesaHTML([p])}</div>` : ''}</div>` : ''}<div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div></div>`).join('');
+                container.innerHTML = andamento.length === 0 ? "<p class='text-center text-white/50 py-4'>Nenhum pedido em andamento.</p>" : andamento.map(p => `<div class="bg-black/40 p-4 rounded-xl border ${p.cancelamentoPendente" style="position: relative;"><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" ? 'border-red-600 ring-1 ring-red-600/60' : (p.status === 'Cliente não encontrado' ? 'border-red-500 ring-1 ring-red-500/60' : (p.tipoEntrega === 'retirada' ? 'border-orange-500/70' : 'border-blue-800/50'))}">${p.cancelamentoPendente ? '<p class="text-red-400 text-xs font-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Cliente solicitou cancelamento — veja a aba Cancelamentos</p>' : ''}${p.status === 'Cliente não encontrado' ? `<p class="czk-banner-nao-encontrado text-red-400 text-xs font-bold mb-2"><i class="fas fa-user-slash"></i> O entregador não encontrou o cliente — pedido voltou pra loja. Reatribua um entregador ou entre em contato.</p>` : ''}<div style="position: absolute; top: 12px; right: 12px; background: #FFEB3B; color: #333; border: 2px solid #FDD835; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;" onclick="abrirMenuOpcoes(${p.id}, event)">⋮${renderOpcoesPedido(p.id)}</div><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="text-xs font-bold text-blue-400 mb-1">${formatarNumeroPedido(p)}${czkBadgeRetiradaPedido(p)}</p><p class="text-white font-bold"><i class="fas fa-user"></i> ${p.clienteNome}</p>${czkLinhaEnderecoPedido(p)}<p class="text-sm text-white/60"><i class="fab fa-whatsapp text-green-400"></i> ${p.whatsapp}</p><p class="text-sm text-white/60"><i class="fas fa-credit-card"></i> Pagamento: ${p.metodo}</p>${czkExtrasPedidoHTML(p)}<p class="text-xs ${p.status === 'Cliente não encontrado' ? 'text-red-400' : 'text-blue-300'} font-bold mt-1">Status: ${p.status}</p></div></div><div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 12px; padding-top: 12px; display: flex; justify-content: flex-end;"><div style="background: #dc2626; border: 2px solid #b91c1c; border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; gap: 6px;"><span style="color: white; font-weight: 600; font-size: 13px;">R$ ${p.total.toFixed(2)}</span><button onclick="imprimirPedido(${p.id})" style="background: #1e3a8a; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center;"><i class="fas fa-print"></i></button></div></div><div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/10">${p.tipoEntrega === 'retirada' ? `<p class="text-xs text-orange-300"><i class="fas fa-store"></i> Pedido de retirada — não precisa atribuir entregador.</p>` : (p.tipoEntrega === 'mesa' ? `<select id=\"garcom-direto-${p.id}\" class=\"rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]\"><option value=\"\">Selecione o garçom...</option>${garcons.map(g => `<option value=\"${g.login}\">${g.nome || g.login}</option>`).join('')}</select><button onclick=\"atribuirAoGarcomAdmin(${p.id})\" class=\"bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold\"><i class=\"fas fa-concierge-bell\"></i> Atribuir</button>` : `<select id="entregador-direto-${p.id}" class="rounded-lg p-2 text-sm text-white border-blue-800 bg-[#16233d]"><option value="">Selecione o entregador...</option>${entregadores.map(e => `<option value="${e.login}">${e.login}</option>`).join('')}</select><button onclick="entregarParaEntregadorAdmin(${p.id})" class="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-motorcycle"></i> Entregar para</button>`)}<button onclick="finalizarPedidoAdmin(${p.id})" class="bg-white hover:bg-gray-200 text-[#16233d] border border-blue-300 px-4 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-check-double"></i> Finalizar Pedido</button></div>${p.tipoEntrega === 'mesa' ? `<div class="mt-3 pt-3 border-t border-white/10"><button onclick="toggleItensAndamento(${p.id})" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg"><i class="fas fa-concierge-bell"></i> ${andamentoItensExpandidos[p.id] ? 'Esconder itens' : 'Servir itens'}</button>${andamentoItensExpandidos[p.id] ? `<div class="mt-2">${gerarStatusItensPedidosMesaHTML([p])}</div>` : ''}</div>` : ''}<div class="mt-2 text-sm text-white/80"><strong>Itens:</strong><div class="text-xs text-white/60 mt-1">${p.itens.map(i=>`• ${i}`).join('<br>')}</div></div></div>`).join('');
             }
         }
         function aceitarPedidoAdmin(pedidoId) { atualizarStatusPedido(pedidoId, "Em produção"); }
@@ -7873,7 +7983,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             bubble.style.left = "auto";
             bubble.style.top = "auto";
             bubble.style.right = "18px";
-            bubble.style.bottom = "100px";
+            bubble.style.bottom = "300px";
             bolinhaSuportePosicionada = true;
         }
 
@@ -7939,7 +8049,10 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     setTimeout(() => { bubble.style.transition = ""; }, 260);
                 }
             }
-            bubble.addEventListener("pointerdown", (e) => { iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){} });
+            bubble.addEventListener("pointerdown", (e) => {
+                if(e.target.closest(".suporte-float-x")) return;
+                iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){}
+            });
             bubble.addEventListener("pointermove", (e) => { if(arrastando) mover(e.clientX, e.clientY); });
             bubble.addEventListener("pointerup", soltar);
             bubble.addEventListener("pointercancel", soltar);
@@ -8766,7 +8879,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             bubble.style.left = "auto";
             bubble.style.top = "auto";
             bubble.style.right = "18px";
-            bubble.style.bottom = "175px";
+            bubble.style.bottom = "385px";
             bolinhaEntregadorPosicionada = true;
         }
 
@@ -8827,7 +8940,10 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     setTimeout(() => { bubble.style.transition = ""; }, 260);
                 }
             }
-            bubble.addEventListener("pointerdown", (e) => { iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){} });
+            bubble.addEventListener("pointerdown", (e) => {
+                if(e.target.closest(".entregador-float-x")) return;
+                iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){}
+            });
             bubble.addEventListener("pointermove", (e) => { if(arrastando) mover(e.clientX, e.clientY); });
             bubble.addEventListener("pointerup", soltar);
             bubble.addEventListener("pointercancel", soltar);
@@ -13502,7 +13618,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 balcao: { render: renderBalcaoAdmin },
                 finalizados: { render: renderPedidosFinalizadosAdmin }
             };
-            const classesAtivas = ["bg-blue-900/40", "text-blue-400"];
+            const classesAtivas = ["bg-blue-600", "text-white"];
             Object.keys(abas).forEach(nomeAba => {
                 const btn = document.getElementById("subtab-btn-" + nomeAba);
                 const cont = document.getElementById("subtab-" + nomeAba + "-conteudo");
@@ -15654,6 +15770,50 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     czkToggleTelaCheiaPedidos();
                 }
             }, 600);
+        })();
+    </script>
+
+    <!-- Botão flutuante "Subir" — aparece ao rolar para baixo em qualquer tela/painel com scroll,
+         e ao clicar volta suavemente para o topo de onde o usuário rolou. Não mexe em nenhuma
+         outra função existente. -->
+    <button id="czk-btn-subir" onclick="czkVoltarAoTopo()" aria-label="Subir"
+        style="position:fixed; right:16px; bottom:90px; z-index:9999; width:46px; height:46px;
+        border-radius:9999px; background:#1d4ed8; color:#fff; border:none; box-shadow:0 4px 14px rgba(0,0,0,.35);
+        display:none; align-items:center; justify-content:center; cursor:pointer; font-size:18px;
+        transition:opacity .2s ease;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <script>
+        (function () {
+            let czkUltimoElementoRolado = null;
+            const czkBtnSubir = document.getElementById('czk-btn-subir');
+
+            function czkAoRolar(e) {
+                const alvo = e.target;
+                // só reage a elementos de fato roláveis (não o document inteiro sem necessidade)
+                const scrollTop = (alvo === document) ? window.scrollY : (alvo.scrollTop || 0);
+                if (scrollTop > 250) {
+                    czkUltimoElementoRolado = alvo;
+                    czkBtnSubir.style.display = 'flex';
+                } else if (alvo === czkUltimoElementoRolado || alvo === document) {
+                    czkBtnSubir.style.display = 'none';
+                }
+            }
+
+            // "true" no final = fase de captura, necessário pra pegar o scroll de qualquer
+            // painel/modal interno (eles não fazem o evento de scroll "borbulhar" normalmente)
+            document.addEventListener('scroll', czkAoRolar, true);
+            window.addEventListener('scroll', czkAoRolar, true);
+
+            window.czkVoltarAoTopo = function () {
+                const alvo = czkUltimoElementoRolado || document.scrollingElement || document.documentElement;
+                if (alvo && typeof alvo.scrollTo === 'function') {
+                    alvo.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                czkBtnSubir.style.display = 'none';
+            };
         })();
     </script>
 </body>
