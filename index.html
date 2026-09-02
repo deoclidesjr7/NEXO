@@ -680,7 +680,7 @@
             color: #fff !important;
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-subtabs-bar .subtab-pedidos-btn {
-            border: 1.5px solid #3b82f6;
+            border: 1.5px solid #1d4ed8;
         }
 
         /* ===== Tema claro (creme), só para os cards de "Pedidos novos" / "Em andamento",
@@ -741,8 +741,8 @@
            pra baixo, sem fim. Fora da tela expandida nada muda (continua o max-h-[55vh] de sempre). */
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-novos,
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #lista-pedidos-ativos {
-            max-height: 55vh !important;
-            overflow-y: auto !important;
+            max-height: none !important;
+            overflow-y: visible !important;
         }
         /* Aviso "cliente não encontrado": na tela expandida vira um quadro com fundo rosado
            (como na referência), em vez do texto vermelho simples usado no tema escuro normal. */
@@ -762,9 +762,9 @@
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #titulo-coluna-novos,
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo #titulo-coluna-andamento { margin-bottom: 6px !important; }
         #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .grid.md\:grid-cols-2.gap-5 { gap: 14px !important; }
-        #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 8px !important; }
+        #admin-panel.czk-pedidos-tela-cheia #subtab-andamento-conteudo .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 4px !important; }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos > div,
-        #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos > div { padding: 8px 10px !important; }
+        #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos > div { padding: 6px 10px !important; }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos .mb-1,
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos .mb-1 { margin-bottom: 2px !important; }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos .mb-2,
@@ -3583,7 +3583,7 @@
          embaixo, perto do rodapé, como se estivesse "preso" no fim do conteúdo. Ficando fora do #app-shell,
          ele volta a se comportar como um botão fixo de verdade, acompanhando a rolagem — igual já
          acontecia certinho no celular. -->
-    <div id="wrapper-cart-float-btn" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40" style="display:none;"><button onclick="abrirModalCarrinho()" class="cart-float-btn cart-float-btn-responsivo bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 px-7 py-4 rounded-full shadow-2xl shadow-blue-900/50 flex items-center gap-3 font-black text-white transition-all active:scale-95"><i class="fas fa-shopping-bag text-xl"></i> <span>MEU PEDIDO</span> <span id="total-carrinho-footer" class="bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full text-sm">R$ 0,00</span></button></div>
+    <div id="wrapper-cart-float-btn" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40" style="display:none;"><button onclick="abrirModalCarrinho()" class="cart-float-btn cart-float-btn-responsivo bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 px-7 py-4 rounded-full shadow-2xl shadow-blue-900/50 flex items-center gap-3 font-black text-white transition-all active:scale-95"><i class="fas fa-shopping-bag text-xl"></i> <span>MEU PEDIDO</span> <span id="total-carrinho-footer" class="bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full text-sm" style="color:#2563eb;">R$ 0,00</span></button></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://sdk.mercadopago.com/js/v2"></script>
@@ -15680,16 +15680,26 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const wrapperBtn = document.getElementById("wrapper-cart-float-btn");
             if (!appCliente || !wrapperBtn) return;
 
+            const idsPaineisTrabalho = ['admin-panel', 'cozinha-panel', 'garcom-panel', 'entregador-panel'];
+            const paineisTrabalho = idsPaineisTrabalho.map(id => document.getElementById(id)).filter(Boolean);
+
             function estaVisivel(el) {
                 const d = el.style.display;
                 return d === 'block' || d === 'flex' || d === 'grid';
             }
 
+            function algumPainelDeTrabalhoAberto() {
+                return paineisTrabalho.some(estaVisivel);
+            }
+
             function atualizar() {
-                wrapperBtn.style.display = estaVisivel(appCliente) ? "" : "none";
+                wrapperBtn.style.display = (estaVisivel(appCliente) && !algumPainelDeTrabalhoAberto()) ? "" : "none";
             }
 
             new MutationObserver(atualizar).observe(appCliente, { attributes: true, attributeFilter: ['style'] });
+            paineisTrabalho.forEach(painel => {
+                new MutationObserver(atualizar).observe(painel, { attributes: true, attributeFilter: ['style', 'class'] });
+            });
             atualizar();
         })();
 
