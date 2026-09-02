@@ -219,7 +219,12 @@
         .cor-painel-swatch-btn { background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.8); cursor: pointer; }
         .cor-painel-swatch-btn:hover { background: rgba(0,0,0,0.35); }
         .cor-painel-swatch-btn.cor-painel-ativo { border-color: #2563eb !important; background: rgba(37,99,235,0.18); color: #fff; }
-        .cor-painel-swatch { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); display: inline-block; }
+        /* Cores específicas dos botões de cor painel */
+        #cor-painel-btn-dia { background: #FFF6E4; color: #000 !important; }
+        #cor-painel-btn-dia:hover { background: #ffe8c2; }
+        #cor-painel-btn-noite { background: #101a2c; color: #fff !important; }
+        #cor-painel-btn-noite:hover { background: #1a2844; }
+        .cor-painel-swatch { width: 32px; height: 32px; border-radius: 4px; border: 2px solid #999; display: inline-block; }
         /* Itens do menu do cliente (Meus Endereços/Configurações/Meus Pedidos/Suporte): fundo branco com
            leve destaque só no hover — usa classe própria pra não ser pega pela regra de botões azuis abaixo */
         .czk-dropdown-item { transition: background 0.15s ease; }
@@ -640,6 +645,11 @@
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos > .glass-card-solid {
             border-radius: 0; border: none; min-height: 100vh;
         }
+        /* Logo NEXO desaparece em tela cheia */
+        #admin-panel.czk-pedidos-tela-cheia .admin-panel-logo-badge {
+            display: none !important;
+        }
+
         /* A barra de sub-abas (Cancelamentos, Em andamento, Suporte, Retirada, Balcão, Finalizados)
            ficava dentro do card que rola inteiro na tela cheia, então ao descer a lista de pedidos
            ela "sumia" (rolava pra fora da tela junto com o resto). Agora fica fixa no topo. */
@@ -1702,7 +1712,7 @@
                      topo, separadas por uma linha, para não misturar visualmente com a lista de pedidos) -->
                 <div id="pedidos-subtabs-bar" class="flex gap-2 mb-4 flex-wrap">
                     <button id="subtab-btn-cancelamentos" onclick="switchSubTabPedidos('cancelamentos')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-ban text-red-400"></i> Cancelamentos <span id="contador-cancelamentos-badge" class="hidden bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
-                    <button id="subtab-btn-andamento" onclick="switchSubTabPedidos('andamento')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full bg-blue-900/40 text-blue-400 text-sm font-semibold flex items-center gap-2"><i class="fas fa-fire"></i> Em andamento</button>
+                    <button id="subtab-btn-andamento" onclick="switchSubTabPedidos('andamento')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-fire"></i> Em andamento</button>
                     <button id="subtab-btn-suporte" onclick="switchSubTabPedidos('suporte')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-comment-dots"></i> Conversas de suporte <span id="contador-suporte-badge" class="hidden bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-retirada" onclick="switchSubTabPedidos('retirada')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-shopping-bag text-orange-400"></i> Retirada <span id="contador-retirada-badge" class="hidden bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-balcao" onclick="switchSubTabPedidos('balcao')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-cash-register text-amber-400"></i> Balcão <span id="contador-balcao-badge" class="hidden bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
@@ -7956,7 +7966,10 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     setTimeout(() => { bubble.style.transition = ""; }, 260);
                 }
             }
-            bubble.addEventListener("pointerdown", (e) => { iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){} });
+            bubble.addEventListener("pointerdown", (e) => {
+                if(e.target.closest(".suporte-float-x")) return;
+                iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){}
+            });
             bubble.addEventListener("pointermove", (e) => { if(arrastando) mover(e.clientX, e.clientY); });
             bubble.addEventListener("pointerup", soltar);
             bubble.addEventListener("pointercancel", soltar);
@@ -8844,7 +8857,10 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     setTimeout(() => { bubble.style.transition = ""; }, 260);
                 }
             }
-            bubble.addEventListener("pointerdown", (e) => { iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){} });
+            bubble.addEventListener("pointerdown", (e) => {
+                if(e.target.closest(".entregador-float-x")) return;
+                iniciar(e.clientX, e.clientY); try { bubble.setPointerCapture(e.pointerId); } catch(err){}
+            });
             bubble.addEventListener("pointermove", (e) => { if(arrastando) mover(e.clientX, e.clientY); });
             bubble.addEventListener("pointerup", soltar);
             bubble.addEventListener("pointercancel", soltar);
@@ -13519,7 +13535,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 balcao: { render: renderBalcaoAdmin },
                 finalizados: { render: renderPedidosFinalizadosAdmin }
             };
-            const classesAtivas = ["bg-blue-900/40", "text-blue-400"];
+            const classesAtivas = ["bg-blue-600", "text-white"];
             Object.keys(abas).forEach(nomeAba => {
                 const btn = document.getElementById("subtab-btn-" + nomeAba);
                 const cont = document.getElementById("subtab-" + nomeAba + "-conteudo");
