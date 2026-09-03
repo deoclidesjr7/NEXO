@@ -653,8 +653,25 @@
             margin: 0; flex: 1; min-height: 0; display: flex; flex-direction: column;
         }
         #admin-panel.czk-pedidos-tela-cheia #pedidos-ativos > .glass-card-solid {
-            border-radius: 0; border: none; height: 100%; flex: 1; min-height: 0;
+            border-radius: 0; border: none; box-shadow: none; height: 100%; flex: 1; min-height: 0;
             display: flex; flex-direction: column; overflow: hidden;
+        }
+        /* ===== Remove qualquer resquício de borda/moldura na tela cheia "de verdade" (Fullscreen
+           API do navegador em cima do <html>). Alguns navegadores aplicam um fundo/borda padrão
+           ao elemento que entra em :fullscreen quando ele não preenche 100% da tela "de verdade" —
+           isso é o que sobrava como uma linha clara no topo e nas laterais. Zera tudo (margem,
+           borda e fundo) tanto no próprio <html> em :fullscreen quanto no #admin-panel e no seu
+           conteúdo, garantindo que nada fique menor que a tela e não sobre nenhuma faixa visível. */
+        html:fullscreen, html:-webkit-full-screen, html:-moz-full-screen {
+            margin: 0 !important; padding: 0 !important; border: none !important;
+            width: 100% !important; height: 100% !important; background: #101a2c;
+        }
+        body:fullscreen, body:-webkit-full-screen, body:-moz-full-screen {
+            margin: 0 !important; padding: 0 !important; border: none !important;
+        }
+        #admin-panel.czk-pedidos-tela-cheia {
+            margin: 0 !important; border: none !important; box-shadow: none !important;
+            width: 100vw !important; height: 100vh !important; inset: 0 !important;
         }
         /* Logo NEXO desaparece em tela cheia */
         #admin-panel.czk-pedidos-tela-cheia .admin-panel-logo-badge {
