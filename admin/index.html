@@ -224,6 +224,11 @@
         body.modo-painel-noite #admin-panel .tab-admin-btn.bg-blue-900\/40.text-blue-400 { color: #e5e7eb !important; }
         #admin-panel.czk-pedidos-tela-cheia .czk-caixa-valor-pedido { background: transparent !important; border-color: transparent !important; margin-right: 40px; }
         #admin-panel.czk-pedidos-tela-cheia .czk-caixa-valor-pedido span { color: #2563eb !important; font-weight: 700 !important; }
+        /* Mesmo visual do valor do pedido (caixa transparente, texto azul) e mesmo botão de
+           impressão da tela cheia, só que aplicado também na tela normal do admin, pra ficar
+           igual nos dois modos. */
+        .czk-caixa-valor-pedido { background: transparent !important; border-color: transparent !important; margin-right: 40px; }
+        .czk-caixa-valor-pedido span { color: #2563eb !important; font-weight: 700 !important; }
         .cor-painel-swatch-btn { background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.8); cursor: pointer; }
         .cor-painel-swatch-btn:hover { background: rgba(0,0,0,0.35); }
         .cor-painel-swatch-btn.cor-painel-ativo { border-color: #2563eb !important; background: rgba(37,99,235,0.18); color: #fff; }
@@ -801,7 +806,14 @@
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos > div { padding: 6px 10px !important; }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos > div > div:has(> .czk-caixa-valor-pedido),
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos > div > div:has(> .czk-caixa-valor-pedido) {
-            margin-top: 6px !important; padding-top: 6px !important;
+            margin-top: 0 !important; padding-top: 0 !important; border-top: none !important;
+        }
+        /* Mesmo ajuste acima, mas sem depender da tela cheia — vale também na tela normal do
+           admin. Remove o espaço/linha fraca entre os itens (ou o Status, nos pedidos "Em
+           andamento") e a linha de valor/botões logo abaixo. */
+        #lista-pedidos-novos > div > div:has(> .czk-caixa-valor-pedido),
+        #lista-pedidos-ativos > div > div:has(> .czk-caixa-valor-pedido) {
+            margin-top: 0 !important; padding-top: 0 !important; border-top: none !important;
         }
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-novos .mb-1,
         #admin-panel.czk-pedidos-tela-cheia #lista-pedidos-ativos .mb-1 { margin-bottom: 2px !important; }
@@ -1751,6 +1763,14 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Botão "×" flutuante: some quando a aba ativa é "Pedidos" e aparece sempre que
+                 alguma aba de Configurações está aberta (Taxas, Entregadores, Mesas, Empresa,
+                 etc.), sempre no mesmo lugar. Serve pra sair rapidinho dessa aba e voltar direto
+                 pra tela de Pedidos (aba inicial), sem precisar abrir o menu Configurações de
+                 novo. Usa o mesmo estilo de "×" do resto do painel (ex.: o × que fecha o modal
+                 de Configurações logo acima), então a cor fica igual às outras telas. -->
+            <button id="btn-fechar-aba-config" onclick="abrirAbaPrincipalAdmin('pedidos-ativos')" class="hidden text-white/50 hover:text-blue-400 text-3xl leading-none font-bold" style="position:fixed; top:92px; right:40px; z-index:20;" title="Voltar para Pedidos">&times;</button>
 
             <!-- Aba: Pedidos ativos -->
             <div id="pedidos-ativos" class="admin-tab-content active"><div class="glass-card-solid rounded-2xl p-6 border border-blue-800/40">
@@ -13558,6 +13578,10 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         function switchTab(tabId) { 
             document.querySelectorAll(".admin-tab-content").forEach(t=>t.classList.remove("active")); 
             document.getElementById(tabId).classList.add("active"); 
+            // Mostra o "×" flutuante de "voltar pra Pedidos" em qualquer aba de Configurações;
+            // esconde quando a aba ativa já é a de Pedidos (não faria sentido nela).
+            const btnFecharAbaConfig = document.getElementById('btn-fechar-aba-config');
+            if (btnFecharAbaConfig) btnFecharAbaConfig.classList.toggle('hidden', tabId === 'pedidos-ativos');
             if(tabId==='pedidos-list') renderHistorico(); 
             else if(tabId==='financas-admin') fecharModalRelatorioFinancas();
             else if(tabId==='relatorios-admin') renderRelatoriosAdmin();
