@@ -29,14 +29,20 @@ jobs:
         with:
           node-version: 20
 
+      - name: Checar se o app.js tem erro de sintaxe (bloqueia o deploy se tiver)
+        run: node --check app.js
+
+      - name: Checar se o sw.js tem erro de sintaxe (bloqueia o deploy se tiver)
+        run: node --check sw.js
+
       - name: Instalar o Tailwind CSS (CLI)
         run: npm install -D tailwindcss@3
 
-      - name: Configurar o Tailwind para escanear todos os .html do repositório
+      - name: Configurar o Tailwind para escanear os .html E o app.js
         run: |
           cat > tailwind.config.js << 'EOF'
           module.exports = {
-            content: ["./**/*.html"],
+            content: ["./**/*.html", "./app.js"],
             theme: { extend: {} },
             plugins: [],
           }
