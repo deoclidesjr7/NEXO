@@ -18,10 +18,15 @@ const CZK_SUPABASE_HOST = 'bkhtnnxcwlfytvhyeojm.supabase.co';
 // Pré-cacheados assim que o Service Worker instala, antes de precisar deles.
 const CZK_APP_SHELL = [
     '/',
-    '/index.html',
+    '/painel.html',
     '/app.js',
-    '/tailwind-prod.css',
-    '/manifest.json'
+    '/tailwind.css',
+    '/manifest.json',
+    '/apple-touch-icon.png',
+    '/favicon-16.png',
+    '/favicon-32.png',
+    '/icon-192.png',
+    '/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
