@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CZK MAKI</title>
+    <title>NEXO</title>
 
     <!-- ===================== Prévia de link (WhatsApp, redes sociais, etc.) =====================
          Sem essas tags, apps como o WhatsApp só conseguem mostrar o <title> em texto puro, sem
@@ -63,7 +63,8 @@
          o <noscript> abaixo garante que os ícones carreguem do mesmo jeito. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"></noscript>
     <!-- Leaflet (mapa) e Chart.js (gráficos) NÃO são mais carregados aqui no <head>.
          São bibliotecas usadas só dentro do painel Admin/Entregador (mapa de rastreamento e aba de Relatórios),
          então agora são carregadas sob demanda (ver czkCarregarLeaflet/czkCarregarChart no script principal),
@@ -3653,8 +3654,8 @@
     <div id="wrapper-cart-float-btn" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40" style="display:none;"><button onclick="abrirModalCarrinho()" class="cart-float-btn cart-float-btn-responsivo bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 px-7 py-4 rounded-full shadow-2xl shadow-blue-900/50 flex items-center gap-3 font-black text-white transition-all active:scale-95"><i class="fas fa-shopping-bag text-xl"></i> <span>MEU PEDIDO</span> <span id="total-carrinho-footer" class="bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full text-sm" style="color:#2563eb;">R$ 0,00</span></button></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" onerror="this.onerror=null; var s=document.createElement('script'); s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'; s.onerror=function(){ window._czkJsQrFalhou = true; }; document.head.appendChild(s);"></script>
+    
+    
     <script>
         // =========================================================================
         //  CARREGAMENTO SOB DEMANDA (Leaflet e Chart.js) — otimização de performance
@@ -3693,6 +3694,60 @@
                 document.head.appendChild(script);
             });
             return _czkChartCarregando;
+        }
+
+        // =========================================================================
+        //  CARREGAMENTO SOB DEMANDA — Mercado Pago e jsQR
+        //  Essas duas bibliotecas só são usadas em momentos específicos:
+        //  - Mercado Pago: só quando o cliente escolhe pagar com cartão pelo app
+        //  - jsQR: só quando o tablet volante abre a câmera pela primeira vez
+        //  Antes, as duas eram baixadas por TODO mundo que abria o app (mesmo quem
+        //  só ia olhar o cardápio). Agora baixam só quando forem realmente usadas.
+        // =========================================================================
+        let _czkMercadoPagoCarregando = null;
+        function czkCarregarMercadoPago() {
+            if (typeof MercadoPago !== "undefined") {
+                if (!mp && MP_PUBLIC_KEY.indexOf("COLE_AQUI") === -1) {
+                    try { mp = new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" }); } catch(e) { console.warn("[Mercado Pago] erro ao inicializar:", e); }
+                }
+                return Promise.resolve();
+            }
+            if (_czkMercadoPagoCarregando) return _czkMercadoPagoCarregando;
+            _czkMercadoPagoCarregando = new Promise((resolve) => {
+                const script = document.createElement("script");
+                script.src = "https://sdk.mercadopago.com/js/v2";
+                script.onload = () => {
+                    if (MP_PUBLIC_KEY.indexOf("COLE_AQUI") === -1) {
+                        try { mp = new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" }); } catch(e) { console.warn("[Mercado Pago] erro ao inicializar:", e); }
+                    }
+                    resolve();
+                };
+                script.onerror = () => { console.warn("[Mercado Pago] falha ao carregar o SDK"); resolve(); };
+                document.head.appendChild(script);
+            });
+            return _czkMercadoPagoCarregando;
+        }
+
+        let _czkJsQrCarregando = null;
+        function czkCarregarJsQR() {
+            if (typeof jsQR === "function") return Promise.resolve();
+            if (_czkJsQrCarregando) return _czkJsQrCarregando;
+            _czkJsQrCarregando = new Promise((resolve) => {
+                const script = document.createElement("script");
+                script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js";
+                script.onload = () => resolve();
+                script.onerror = () => {
+                    // Fallback pro unpkg, igual era feito no atributo onerror do HTML original
+                    const fallback = document.createElement("script");
+                    fallback.src = "https://unpkg.com/jsqr@1.4.0/dist/jsQR.js";
+                    fallback.onload = () => resolve();
+                    fallback.onerror = () => { window._czkJsQrFalhou = true; resolve(); };
+                    document.head.appendChild(fallback);
+                };
+                document.head.appendChild(script);
+            });
+            return _czkJsQrCarregando;
+        }
         }
 
         // =========================================================================
@@ -3794,9 +3849,9 @@
         //  pela sua chave real do painel: https://www.mercadopago.com.br/developers/panel/app
         // =========================================================================
         const MP_PUBLIC_KEY = "APP_USR-a4e8cd31-c6c5-4aa2-bc74-e02841aa8952";
-        const mp = (typeof MercadoPago !== "undefined" && MP_PUBLIC_KEY.indexOf("COLE_AQUI") === -1)
-            ? new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" })
-            : null;
+        // mp agora começa como null e é inicializado sob demanda — só quando o cliente
+        // realmente escolher pagar com cartão pelo app (ver czkCarregarMercadoPago)
+        let mp = null;
         let mpCardBrickController = null;
 
         // Salva local (cache offline) + remoto no Supabase, sem travar a interface.
@@ -6914,6 +6969,14 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 else btnConfirmar.classList.remove("hidden");
                 await desmontarCardBrick();
                 return;
+            }
+            // Carrega o SDK do Mercado Pago só agora, na primeira vez que o cliente escolheu cartão
+            if(!mp) {
+                btnConfirmar.classList.add("hidden");
+                wrap.classList.remove("hidden");
+                const containerBrick = document.getElementById("cardPaymentBrick_container");
+                if(containerBrick) containerBrick.innerHTML = `<p class="text-white/60 text-sm text-center py-6"><i class="fas fa-circle-notch fa-spin mr-2"></i> Carregando formulário de pagamento...</p>`;
+                await czkCarregarMercadoPago();
             }
             if(!mp) {
                 wrap.classList.add("hidden");
@@ -11836,9 +11899,12 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 statusEl.innerText = "Este navegador não permite acessar a câmera aqui. Peça pro lojista atualizar o app do tablet.";
                 return;
             }
-            // O leitor de QR depende de uma biblioteca (jsQR) carregada da internet. Se a conexão
-            // do tablet estiver ruim ou bloqueando o CDN, ela pode não ter carregado ainda — espera
-            // até 6s por ela antes de desistir, em vez de abrir a câmera e nunca reconhecer nada.
+                        // O leitor de QR depende de uma biblioteca (jsQR) carregada da internet.
+            // Ela agora é baixada só agora, na primeira vez que este leitor é aberto.
+            czkCarregarJsQR();
+            // Se a conexão do tablet estiver ruim ou bloqueando o CDN, a biblioteca pode
+            // demorar — espera até 6s por ela antes de desistir, em vez de abrir a câmera
+            // e nunca reconhecer nada.
             statusEl.innerText = "Carregando leitor de QR Code...";
             let tentativas = 0;
             const esperarJsQR = setInterval(() => {
