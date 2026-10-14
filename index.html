@@ -11895,10 +11895,27 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         let _czkScannerAvisouDemora = false;
         let _czkScannerParaChamarGarcom = false; // true quando o QR está sendo escaneado pra CHAMAR o garçom, não pra enviar um pedido
 
-        function abrirScannerMesaVolante(validado) {
+                function abrirScannerMesaVolante(validado) {
             _czkValidadoMesaVolante = validado;
             const statusEl = document.getElementById("scanner-mesa-status");
-            document.getElementById("modal-scanner-mesa").style.display = "flex";
+            const modal = document.getElementById("modal-scanner-mesa");
+            // Tira o modal de dentro do #app-shell (na primeira vez que abre): no computador/tablet
+            // grande, o #app-shell usa "contain: layout", que faz o modal se centralizar dentro dele
+            // (que é mais alto que a tela por causa do cardápio) em vez de centralizar na tela visível.
+            // Movendo pro <body>, ele centraliza de verdade.
+            if(modal && modal.parentElement && modal.parentElement.id === "app-shell") {
+                document.body.appendChild(modal);
+            }
+            modal.style.position = "fixed";
+            modal.style.top = "0";
+            modal.style.left = "0";
+            modal.style.right = "0";
+            modal.style.bottom = "0";
+            modal.style.width = "100vw";
+            modal.style.height = "100dvh";
+            modal.style.alignItems = "center";
+            modal.style.justifyContent = "center";
+            modal.style.display = "flex";
             const video = document.getElementById("scanner-mesa-video");
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 statusEl.innerText = "Este navegador não permite acessar a câmera aqui. Peça pro lojista atualizar o app do tablet.";
@@ -15962,7 +15979,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     czkBtnSubir.style.display = 'none';
                 }
             }
-            
+
             // "true" no final = fase de captura, necessário pra pegar o scroll de qualquer
             // painel/modal interno (eles não fazem o evento de scroll "borbulhar" normalmente)
             document.addEventListener('scroll', czkAoRolar, true);
