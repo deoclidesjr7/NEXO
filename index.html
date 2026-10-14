@@ -1420,7 +1420,7 @@
         <i class="fas fa-circle-notch fa-spin" style="font-size:2.2rem;color:rgba(255,255,255,0.35);"></i>
     </div>
     <!-- Selo fixo de "modo mesa": só aparece quando o cardápio foi aberto pelo QR Code de uma mesa (?mesa=NUMERO) -->
-    <div id="selo-modo-mesa" class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-[80] bg-[#16233d] text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border border-white/20"><i class="fas fa-utensils text-amber-400"></i> <span></span></div>
+    <div id="selo-modo-mesa" class="hidden fixed top-14 left-1/2 -translate-x-1/2 z-[80] bg-[#16233d] text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border border-white/20"><i class="fas fa-utensils text-amber-400"></i> <span></span></div>
 
     <!-- Botão de modo quiosque: só aparece em modo mesa (tablet fixo do cliente), nunca no modo garçom -->
     <button id="btn-modo-quiosque" onclick="alternarModoQuiosque()" class="hidden fixed top-3 right-3 z-[80] bg-[#16233d] text-white text-xs font-bold w-9 h-9 rounded-full shadow-lg flex items-center justify-center border border-white/20" title="Modo quiosque (tela cheia)"><i id="icone-modo-quiosque" class="fas fa-expand"></i></button>
@@ -1619,24 +1619,24 @@
     <!-- MODAL LEITOR DE QR CODE: usado pelo "Tablet Volante" — aponta a câmera pro QR
          Code impresso na mesa (o mesmo QR que o cliente escanearia com o próprio celular),
          identifica a mesa automaticamente e já envia o pedido pra cozinha, sem mais toques. -->
-    <div id="modal-scanner-mesa" class="fixed inset-0 z-[70] bg-black hidden items-center justify-center">
-        <div class="relative w-full h-full max-w-lg mx-auto flex flex-col">
-            <div class="p-5 flex items-center justify-between">
-                <div class="text-white">
-                    <p class="font-bold text-lg"><i class="fas fa-qrcode mr-2 text-amber-400"></i> Aponte pro QR Code da mesa</p>
-                    <p id="scanner-mesa-status" class="text-xs text-white/50 mt-1">Procurando câmera...</p>
+    <div id="modal-scanner-mesa" class="fixed inset-0 z-[70] bg-black/95 hidden items-center justify-center p-4">
+        <div class="relative w-full max-w-md mx-auto flex flex-col bg-[#101a2c] rounded-2xl overflow-hidden border border-white/15 shadow-2xl" style="max-height: 92vh;">
+            <div class="p-4 flex items-center justify-between border-b border-white/10">
+                <div class="text-white min-w-0">
+                    <p class="font-bold text-base"><i class="fas fa-qrcode mr-2 text-amber-400"></i> Aponte pro QR Code da mesa</p>
+                    <p id="scanner-mesa-status" class="text-xs text-white/50 mt-1 truncate">Procurando câmera...</p>
                 </div>
-                <button onclick="cancelarScannerMesaVolante()" class="text-3xl text-white/60 hover:text-white leading-none">&times;</button>
+                <button onclick="cancelarScannerMesaVolante()" class="text-3xl text-white/60 hover:text-white leading-none shrink-0 ml-2">&times;</button>
             </div>
-            <div class="relative flex-1 overflow-hidden">
+            <div class="relative overflow-hidden bg-black" style="aspect-ratio: 1 / 1; width: 100%;">
                 <video id="scanner-mesa-video" class="w-full h-full object-cover" playsinline muted></video>
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div class="w-64 h-64 border-4 border-amber-400/80 rounded-2xl" style="box-shadow:0 0 0 999px rgba(0,0,0,0.45);"></div>
+                    <div class="border-4 border-amber-400/90 rounded-2xl" style="width: min(78%, 512px); aspect-ratio: 1 / 1; box-shadow: 0 0 0 999px rgba(0,0,0,0.55);"></div>
                 </div>
             </div>
-            <div class="p-5 text-center">
-                <p class="text-white/70 text-sm">O pedido é enviado automaticamente assim que o QR Code da mesa for reconhecido.</p>
-                <button onclick="cancelarScannerMesaVolante()" class="mt-4 w-full border border-white/25 hover:border-white/50 text-white/80 hover:text-white py-2.5 rounded-xl text-sm font-semibold">Cancelar e voltar pro pedido</button>
+            <div class="p-4 text-center">
+                <p class="text-white/70 text-xs">O pedido é enviado automaticamente assim que o QR Code for reconhecido.</p>
+                <button onclick="cancelarScannerMesaVolante()" class="mt-3 w-full border border-white/25 hover:border-white/50 text-white/80 hover:text-white py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
             </div>
         </div>
     </div>
@@ -11714,7 +11714,13 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         }
         // Ajusta a interface do cliente pro modo mesa: selo fixo no topo + esconde
         // tudo que não se aplica a pedido de salão (endereço, frete, forma de pagamento).
-        function aplicarModoMesaNaTela() {
+                function aplicarModoMesaNaTela() {
+            // Garante que nenhuma tela de login/acesso (Área Restrita, login de admin,
+            // entregador, garçom, etc.) fique por cima do cardápio em modo mesa/volante.
+            ["screen-login","screen-auth","modal-proprietario","modal-admin-login","modal-entregador","modal-cozinha","modal-mesas-login","modal-garcom","modal-desenvolvedor"].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.style.display = "none";
+            });
             const selo = document.getElementById("selo-modo-mesa");
             if(selo) {
                 selo.classList.remove("hidden");
@@ -15816,7 +15822,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const wrapperBtn = document.getElementById("wrapper-cart-float-btn");
             if (!appCliente || !wrapperBtn) return;
 
-            const idsPaineisTrabalho = ['admin-panel', 'cozinha-panel', 'garcom-panel', 'entregador-panel'];
+            const idsPaineisTrabalho = ['admin-panel', 'cozinha-panel', 'garcom-panel', 'entregador-panel', 'modal-scanner-mesa'];
             const paineisTrabalho = idsPaineisTrabalho.map(id => document.getElementById(id)).filter(Boolean);
 
             function estaVisivel(el) {
@@ -15884,6 +15890,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const estaNoAdmin = window.location.pathname.replace(/\/+$/, '').endsWith('/admin');
             if (!estaNoAdmin) return;
             setTimeout(() => {
+                if (typeof modoMesaAtivo !== 'undefined' && modoMesaAtivo) return;
                 if (typeof adminLogado !== 'undefined' && !adminLogado
                     && typeof abrirLoginProprietario === 'function') {
                     abrirLoginProprietario();
