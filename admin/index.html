@@ -290,10 +290,7 @@
         /* Deixa os "acentos" (ícones/títulos) legíveis sobre o fundo creme em TODA a parte clara do app (cliente + admin + entregador) */
         :is(#screen-login, #screen-auth, #app-cliente, #modal-carrinho, #modal-historico-cliente, #modal-config-conta, #modal-confirmar-pedido, #modal-suporte-cliente, #modal-enderecos, #modal-novo-endereco, #modal-detalhe-produto, #modal-proprietario, #admin-panel, #entregador-panel) [class*="text-blue-400"] { color: #1d4ed8 !important; }
         /* ===== Cor Principal (aba Customização): controla de verdade os acentos/ícones/links das telas do CLIENTE ===== */
-        #screen-login [class*="text-blue-400"], #screen-auth [class*="text-blue-400"], #app-cliente [class*="text-blue-400"],
-        #modal-carrinho [class*="text-blue-400"], #modal-historico-cliente [class*="text-blue-400"], #modal-config-conta [class*="text-blue-400"],
-        #modal-confirmar-pedido [class*="text-blue-400"], #modal-suporte-cliente [class*="text-blue-400"],
-        #modal-enderecos [class*="text-blue-400"], #modal-novo-endereco [class*="text-blue-400"], #modal-detalhe-produto [class*="text-blue-400"] {
+        :is(#screen-login, #screen-auth, #app-cliente, #modal-carrinho, #modal-historico-cliente, #modal-config-conta, #modal-confirmar-pedido, #modal-suporte-cliente, #modal-enderecos, #modal-novo-endereco, #modal-detalhe-produto) [class*="text-blue-400"] {
             color: var(--czk-cor-principal, #1d4ed8) !important;
         }
         /* Botões de ação principais (Adicionar, Pedir, Confirmar, botão flutuante) nas telas do CLIENTE */
