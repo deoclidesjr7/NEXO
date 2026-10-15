@@ -343,9 +343,7 @@
         #admin-panel [class*="text-red-400"], #entregador-panel [class*="text-red-400"] { color: #b91c1c !important; }
 
         /* Mesma correção para tons ainda mais claros (300), usados em hover de botões e detalhes de preço */
-        #screen-login [class*="text-blue-300"], #screen-auth [class*="text-blue-300"], #app-cliente [class*="text-blue-300"],
-        #modal-carrinho [class*="text-blue-300"], #modal-enderecos [class*="text-blue-300"], #modal-novo-endereco [class*="text-blue-300"],
-        #admin-panel [class*="text-blue-300"], #entregador-panel [class*="text-blue-300"] { color: #1d4ed8 !important; }
+        :is(#screen-login, #screen-auth, #app-cliente, #modal-carrinho, #modal-enderecos, #modal-novo-endereco, #admin-panel, #entregador-panel) [class*="text-blue-300"] { color: #1d4ed8 !important; }
         #screen-login [class*="text-green-300"], #screen-auth [class*="text-green-300"], #app-cliente [class*="text-green-300"],
         #modal-enderecos [class*="text-green-300"], #modal-novo-endereco [class*="text-green-300"],
         #admin-panel [class*="text-green-300"], #entregador-panel [class*="text-green-300"] { color: #15803d !important; }
@@ -3436,6 +3434,7 @@
     
     
     <script>
+<script>
         // =========================================================================
         //  C8 — SILENCIAR LOGS EM PRODUÇÃO
         //  Desliga os console.log/info/warn em produção (mantém console.error, que
