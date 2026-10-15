@@ -3428,7 +3428,7 @@
          embaixo, perto do rodapé, como se estivesse "preso" no fim do conteúdo. Ficando fora do #app-shell,
          ele volta a se comportar como um botão fixo de verdade, acompanhando a rolagem — igual já
          acontecia certinho no celular. -->
-    <div id="wrapper-cart-float-btn" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40" style="display:none;"><button abrirModalCarrinhoComOferta() cart-float-btn-responsivo bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 px-7 py-4 rounded-full shadow-2xl shadow-blue-900/50 flex items-center gap-3 font-black text-white transition-all active:scale-95"><i class="fas fa-shopping-bag text-xl"></i> <span>MEU PEDIDO</span> <span id="total-carrinho-footer" class="bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full text-sm" style="color:#2563eb;">R$ 0,00</span></button></div>
+    <div id="wrapper-cart-float-btn" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40" style="display:none;"><button onclick="abrirModalCarrinhoComOferta()" class="cart-float-btn cart-float-btn-responsivo bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 px-7 py-4 rounded-full shadow-2xl shadow-blue-900/50 flex items-center gap-3 font-black text-white transition-all active:scale-95"><i class="fas fa-shopping-bag text-xl"></i> <span>MEU PEDIDO</span> <span id="total-carrinho-footer" class="bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full text-sm" style="color:#2563eb;">R$ 0,00</span></button></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
@@ -6391,6 +6391,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 window._czkAbrirCarrinhoDepoisDasOfertas = false;
                 abrirModalCarrinho();
             }
+        }
         }
         // Junta os cupons pessoais ativos desse cliente com os cupons gerais em destaque
         // (sem repetir código), montando a lista de "cupons disponíveis" mostrada dentro
