@@ -3199,9 +3199,9 @@
 
     <!-- MODAL CARRINHO (COM SELEÇÃO DE ENDEREÇO DETALHADA) -->
     <div id="modal-carrinho" class="fixed inset-0 z-50 bg-[#13223a]/98 hidden items-center justify-center p-4 backdrop-blur-md">
-        <div class="glass-card rounded-2xl w-full max-w-3xl border border-blue-700/60 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+        <div class="glass-card rounded-2xl w-full max-w-lg border border-blue-700/60 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
             <div class="bg-blue-900/20 p-5 flex justify-between items-center border-b border-blue-800/50"><h2 class="text-2xl font-bold flex items-center gap-2"><i class="fas fa-receipt text-blue-500"></i> Seu Carrinho</h2><button onclick="fecharModalCarrinho()" class="text-3xl text-white/50 hover:text-blue-400">&times;</button></div>
-                        <div class="p-5 flex-1 overflow-y-auto">
+                                    <div class="p-4 overflow-y-auto">
                 <div id="lista-carrinho" class="space-y-3"></div>
                 <div id="bloco-cupom-carrinho" class="border-t border-white/15 pt-4 mt-3 space-y-2">
                     <label class="text-xs text-white/60 font-semibold uppercase">Cupom de desconto</label>
@@ -6330,7 +6330,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             atualizarTaxaMaquininha(); atualizarExibicaoPix(); atualizarExibicaoBrickCartao(); atualizarCamposTroco(); atualizarEstimativaTempo();
             return sub;
         }
-                function abrirModalCarrinho() {
+                        function abrirModalCarrinho() {
             // Tira o modal de dentro do #app-shell (na primeira vez que abre): no computador/tablet,
             // o #app-shell usa "contain: layout", que faz o modal se centralizar dentro dele
             // (que é mais alto que a tela por causa do cardápio) em vez de na tela visível.
@@ -6338,6 +6338,10 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             if(modalCarrinho && modalCarrinho.parentElement && modalCarrinho.parentElement.id === "app-shell") {
                 document.body.appendChild(modalCarrinho);
             }
+            // Remove qualquer cópia fantasma do modal-carrinho que tenha sido criada
+            // (proteção contra duplicação acidental que pode gerar faixas "Seu Carrinho" sobrepostas).
+            const copias = document.querySelectorAll('#modal-carrinho');
+            copias.forEach((el, idx) => { if(idx > 0) el.remove(); });
             if(carrinho.length === 0) return czkAlert("Carrinho vazio!");
             if(!modoMesaAtivo && (!clienteAtual || !clienteAtual.enderecos || clienteAtual.enderecos.length === 0)) {
                 czkAlert("Cadastre pelo menos um endereço antes de fazer um pedido.");
