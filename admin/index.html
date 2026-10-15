@@ -3659,6 +3659,19 @@
     
     
     <script>
+<script>
+        // =========================================================================
+        //  C8 — SILENCIAR LOGS EM PRODUÇÃO
+        //  Desliga os console.log/info/warn em produção (mantém console.error, que
+        //  é útil pra debugar erros de verdade). Em desenvolvimento, defina
+        //  window.CZK_DEBUG = true antes deste script pra ver tudo de novo.
+        // =========================================================================
+        if (!window.CZK_DEBUG) {
+            console.log = function(){};
+            console.info = function(){};
+            console.warn = function(){};
+        }
+
         // =========================================================================
         //  CARREGAMENTO SOB DEMANDA (Leaflet e Chart.js) — otimização de performance
         //  Essas duas bibliotecas só são necessárias dentro do painel Admin/Entregador
