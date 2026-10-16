@@ -6783,7 +6783,11 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         // Preenche a tela de "pedido enviado" — no modo mesa mostra o total corrente da
         // comanda (a soma de tudo que já foi pedido naquela mesa) e o botão "Pedir mais"
         // (fica no mesmo cardápio, sem tela de acompanhamento de entrega/mapa).
-        function exibirTelaPedidoEnviado(pedido) {
+                function exibirTelaPedidoEnviado(pedido) {
+            const modalEnviado = document.getElementById("modal-pedido-enviado");
+            if(modalEnviado && modalEnviado.parentElement && modalEnviado.parentElement.id === "app-shell") {
+                document.body.appendChild(modalEnviado);
+            }
             const tituloEl = document.getElementById("titulo-pedido-enviado");
             const msgEl = document.getElementById("msg-pedido-enviado");
             const blocoComanda = document.getElementById("bloco-comanda-pedido-enviado");
