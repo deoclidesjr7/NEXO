@@ -6118,8 +6118,12 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             atualizarTaxaMaquininha(); atualizarExibicaoPix(); atualizarExibicaoBrickCartao(); atualizarCamposTroco(); atualizarEstimativaTempo();
             return sub;
         }
-                        function abrirModalCarrinhoComOferta() {
+                                function abrirModalCarrinhoComOferta() {
             if(carrinho.length === 0) return czkAlert("Carrinho vazio!");
+            // Valida estoque ANTES de abrir ofertas/carrinho: se algum item ficou
+            // esgotado enquanto o cliente escolhia, avisa agora e nem abre a tela.
+            const erroEstoque = validarEstoqueCarrinho();
+            if(erroEstoque) return czkAlert(`⚠️ ${erroEstoque}`);
             if(!modoMesaAtivo && (!clienteAtual || !clienteAtual.enderecos || clienteAtual.enderecos.length === 0)) {
                 czkAlert("Cadastre pelo menos um endereço antes de fazer um pedido.");
                 abrirModalEnderecos();
@@ -6142,7 +6146,11 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             modalOfertas.style.display = 'flex';
         }
 
-        function abrirModalCarrinho() {
+                function abrirModalCarrinho() {
+            if(carrinho.length > 0) {
+                const erroEstoqueAgora = validarEstoqueCarrinho();
+                if(erroEstoqueAgora) return czkAlert(`⚠️ ${erroEstoqueAgora}`);
+            }
             // Tira o modal de dentro do #app-shell (na primeira vez que abre): no computador/tablet,
             // o #app-shell usa "contain: layout", que faz o modal se centralizar dentro dele
             // (que é mais alto que a tela por causa do cardápio) em vez de na tela visível.
