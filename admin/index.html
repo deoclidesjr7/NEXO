@@ -6175,7 +6175,6 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             modalOfertas.style.display = 'flex';
         }
         function abrirModalCarrinho(ignorarValidacao) {
-                    function abrirModalCarrinho(ignorarValidacao) {
             if(!ignorarValidacao && carrinho.length > 0) {
                 const erroEstoqueAgora = validarEstoqueCarrinho();
                 if(erroEstoqueAgora) return czkAlert(`⚠️ ${erroEstoqueAgora}`, () => {
