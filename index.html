@@ -3543,9 +3543,18 @@
         //  removendo o texto padrão "A página em ... diz")
         // =========================================================================
         let _czkAlertCb = null;
-        function czkAlert(msg, cb) {
+                function czkAlert(msg, cb) {
             document.getElementById("czk-alert-msg").innerText = msg;
-            document.getElementById("czk-modal-alert").style.display = "flex";
+            const modalAlert = document.getElementById("czk-modal-alert");
+            // Tira o modal de dentro do #app-shell (na 1ª vez): no computador/tablet, o
+            // #app-shell usa "contain: layout", que faz o "position: fixed" se referenciar
+            // ao app-shell (mais alto que a tela) em vez da janela visível — daí o alerta
+            // aparecer "grudado" lá embaixo, exigindo rolar pra ver. Movendo pro <body>,
+            // ele centraliza de verdade.
+            if (modalAlert && modalAlert.parentElement && modalAlert.parentElement.id === "app-shell") {
+                document.body.appendChild(modalAlert);
+            }
+            modalAlert.style.display = "flex";
             _czkAlertCb = typeof cb === "function" ? cb : null;
         }
         function czkAlertOk() {
@@ -3554,10 +3563,14 @@
             if(cb) cb();
         }
         let _czkConfirmYesCb = null, _czkConfirmNoCb = null;
-        function czkConfirm(msg, cbYes, cbNo, textoSim) {
+                function czkConfirm(msg, cbYes, cbNo, textoSim) {
             document.getElementById("czk-confirm-msg").innerText = msg;
             document.getElementById("czk-confirm-btn-sim").innerText = textoSim || "OK";
-            document.getElementById("czk-modal-confirm").style.display = "flex";
+            const modalConfirm = document.getElementById("czk-modal-confirm");
+            if (modalConfirm && modalConfirm.parentElement && modalConfirm.parentElement.id === "app-shell") {
+                document.body.appendChild(modalConfirm);
+            }
+            modalConfirm.style.display = "flex";
             _czkConfirmYesCb = typeof cbYes === "function" ? cbYes : null;
             _czkConfirmNoCb = typeof cbNo === "function" ? cbNo : null;
         }
