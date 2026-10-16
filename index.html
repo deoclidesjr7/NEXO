@@ -13879,6 +13879,39 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
 function czkComprimirImagem(file, maxW, maxH, qualidade) {
     return new Promise((resolve, reject) => {
         if (!file || !file.type.startsWith('image/')) return reject(new Error('não é imagem'));
+        if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+            const r = new FileReader();
+            r.onload = e => resolve(e.target.result);
+            r.onerror = reject;
+            r.readAsDataURL(file);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                let w = img.width, h = img.height;
+                if (w > maxW || h > maxH) {
+                    const escala = Math.min(maxW / w, maxH / h);
+                    w = Math.round(w * escala);
+                    h = Math.round(h * escala);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                const tipoSaida = (file.type === 'image/png' && file.size < 200*1024) ? 'image/png' : 'image/jpeg';
+                resolve(canvas.toDataURL(tipoSaida, qualidade));
+            };
+            img.onerror = reject;
+            img.src = ev.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+    return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith('image/')) return reject(new Error('não é imagem'));
         // SVG e GIF não comprime (perde vetor/animação)
         if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
             const r = new FileReader();
