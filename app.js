@@ -1,3 +1,16 @@
+
+        // =========================================================================
+        //  C8 — SILENCIAR LOGS EM PRODUÇÃO
+        //  Desliga os console.log/info/warn em produção (mantém console.error, que
+        //  é útil pra debugar erros de verdade). Em desenvolvimento, defina
+        //  window.CZK_DEBUG = true antes deste script pra ver tudo de novo.
+        // =========================================================================
+        if (!window.CZK_DEBUG) {
+            console.log = function(){};
+            console.info = function(){};
+            console.warn = function(){};
+        }
+
         // =========================================================================
         //  CARREGAMENTO SOB DEMANDA (Leaflet e Chart.js) — otimização de performance
         //  Essas duas bibliotecas só são necessárias dentro do painel Admin/Entregador
@@ -38,13 +51,75 @@
         }
 
         // =========================================================================
+        //  CARREGAMENTO SOB DEMANDA — Mercado Pago e jsQR
+        //  Essas duas bibliotecas só são usadas em momentos específicos:
+        //  - Mercado Pago: só quando o cliente escolhe pagar com cartão pelo app
+        //  - jsQR: só quando o tablet volante abre a câmera pela primeira vez
+        //  Antes, as duas eram baixadas por TODO mundo que abria o app (mesmo quem
+        //  só ia olhar o cardápio). Agora baixam só quando forem realmente usadas.
+        // =========================================================================
+        let _czkMercadoPagoCarregando = null;
+        function czkCarregarMercadoPago() {
+            if (typeof MercadoPago !== "undefined") {
+                if (!mp && MP_PUBLIC_KEY.indexOf("COLE_AQUI") === -1) {
+                    try { mp = new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" }); } catch(e) { console.warn("[Mercado Pago] erro ao inicializar:", e); }
+                }
+                return Promise.resolve();
+            }
+            if (_czkMercadoPagoCarregando) return _czkMercadoPagoCarregando;
+            _czkMercadoPagoCarregando = new Promise((resolve) => {
+                const script = document.createElement("script");
+                script.src = "https://sdk.mercadopago.com/js/v2";
+                script.onload = () => {
+                    if (MP_PUBLIC_KEY.indexOf("COLE_AQUI") === -1) {
+                        try { mp = new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" }); } catch(e) { console.warn("[Mercado Pago] erro ao inicializar:", e); }
+                    }
+                    resolve();
+                };
+                script.onerror = () => { console.warn("[Mercado Pago] falha ao carregar o SDK"); resolve(); };
+                document.head.appendChild(script);
+            });
+            return _czkMercadoPagoCarregando;
+        }
+
+        let _czkJsQrCarregando = null;
+        function czkCarregarJsQR() {
+            if (typeof jsQR === "function") return Promise.resolve();
+            if (_czkJsQrCarregando) return _czkJsQrCarregando;
+            _czkJsQrCarregando = new Promise((resolve) => {
+                const script = document.createElement("script");
+                script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js";
+                script.onload = () => resolve();
+                script.onerror = () => {
+                    // Fallback pro unpkg, igual era feito no atributo onerror do HTML original
+                    const fallback = document.createElement("script");
+                    fallback.src = "https://unpkg.com/jsqr@1.4.0/dist/jsQR.js";
+                    fallback.onload = () => resolve();
+                    fallback.onerror = () => { window._czkJsQrFalhou = true; resolve(); };
+                    document.head.appendChild(fallback);
+                };
+                document.head.appendChild(script);
+            });
+            return _czkJsQrCarregando;
+        }
+
+        // =========================================================================
         //  MODAIS CUSTOMIZADOS (substituem alert()/confirm() nativos do navegador,
         //  removendo o texto padrão "A página em ... diz")
         // =========================================================================
         let _czkAlertCb = null;
-        function czkAlert(msg, cb) {
+                function czkAlert(msg, cb) {
             document.getElementById("czk-alert-msg").innerText = msg;
-            document.getElementById("czk-modal-alert").style.display = "flex";
+            const modalAlert = document.getElementById("czk-modal-alert");
+            // Tira o modal de dentro do #app-shell (na 1ª vez): no computador/tablet, o
+            // #app-shell usa "contain: layout", que faz o "position: fixed" se referenciar
+            // ao app-shell (mais alto que a tela) em vez da janela visível — daí o alerta
+            // aparecer "grudado" lá embaixo, exigindo rolar pra ver. Movendo pro <body>,
+            // ele centraliza de verdade.
+            if (modalAlert && modalAlert.parentElement && modalAlert.parentElement.id === "app-shell") {
+                document.body.appendChild(modalAlert);
+            }
+            modalAlert.style.display = "flex";
             _czkAlertCb = typeof cb === "function" ? cb : null;
         }
         function czkAlertOk() {
@@ -53,10 +128,14 @@
             if(cb) cb();
         }
         let _czkConfirmYesCb = null, _czkConfirmNoCb = null;
-        function czkConfirm(msg, cbYes, cbNo, textoSim) {
+                function czkConfirm(msg, cbYes, cbNo, textoSim) {
             document.getElementById("czk-confirm-msg").innerText = msg;
             document.getElementById("czk-confirm-btn-sim").innerText = textoSim || "OK";
-            document.getElementById("czk-modal-confirm").style.display = "flex";
+            const modalConfirm = document.getElementById("czk-modal-confirm");
+            if (modalConfirm && modalConfirm.parentElement && modalConfirm.parentElement.id === "app-shell") {
+                document.body.appendChild(modalConfirm);
+            }
+            modalConfirm.style.display = "flex";
             _czkConfirmYesCb = typeof cbYes === "function" ? cbYes : null;
             _czkConfirmNoCb = typeof cbNo === "function" ? cbNo : null;
         }
@@ -134,52 +213,12 @@
         //  MERCADO PAGO - Pagamento com cartão incorporado (Card Payment Brick)
         //  A Public Key NÃO é secreta (é feita pra rodar no navegador), mas troque
         //  pela sua chave real do painel: https://www.mercadopago.com.br/developers/panel/app
-        //
-        //  LAZY LOAD: o SDK do Mercado Pago (https://sdk.mercadopago.com/js/v2) só é
-        //  baixado quando o cliente realmente escolhe pagar com cartão pelo app —
-        //  ele NÃO é mais uma tag <script> fixa no HTML. Isso evita que todo cliente
-        //  que só quer ver o cardápio ou pagar em dinheiro/Pix baixe esse SDK à toa.
-        //  "mp" começa null e só é criado depois que o SDK termina de carregar,
-        //  via czkGarantirMercadoPago() (chamada em atualizarExibicaoBrickCartao).
         // =========================================================================
         const MP_PUBLIC_KEY = "APP_USR-a4e8cd31-c6c5-4aa2-bc74-e02841aa8952";
+        // mp agora começa como null e é inicializado sob demanda — só quando o cliente
+        // realmente escolher pagar com cartão pelo app (ver czkCarregarMercadoPago)
         let mp = null;
         let mpCardBrickController = null;
-        let _czkMpSdkPromise = null;
-
-        // Injeta a tag <script> do SDK do Mercado Pago sob demanda (uma única vez;
-        // chamadas repetidas reaproveitam a mesma Promise) e inicializa "mp" quando
-        // a lib estiver pronta. Retorna o objeto "mp" (ou null se não tiver chave/falhar).
-        function czkGarantirMercadoPago() {
-            if (mp) return Promise.resolve(mp);
-            if (_czkMpSdkPromise) return _czkMpSdkPromise;
-
-            _czkMpSdkPromise = new Promise((resolve) => {
-                if (MP_PUBLIC_KEY.indexOf("COLE_AQUI") !== -1) { resolve(null); return; }
-                if (typeof MercadoPago !== "undefined") {
-                    mp = new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
-                    resolve(mp);
-                    return;
-                }
-                const script = document.createElement("script");
-                script.src = "https://sdk.mercadopago.com/js/v2";
-                script.onload = function () {
-                    try {
-                        mp = new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
-                    } catch (e) {
-                        console.error("[Mercado Pago] Falha ao inicializar o SDK:", e);
-                        mp = null;
-                    }
-                    resolve(mp);
-                };
-                script.onerror = function () {
-                    console.error("[Mercado Pago] Falha ao carregar o SDK (https://sdk.mercadopago.com/js/v2).");
-                    resolve(null);
-                };
-                document.head.appendChild(script);
-            });
-            return _czkMpSdkPromise;
-        }
 
         // Salva local (cache offline) + remoto no Supabase, sem travar a interface.
         // Uso: czkSave("czk_produtos", produtos)  -- igual ao antigo localStorage.setItem, só sem o JSON.stringify manual.
@@ -325,7 +364,7 @@
         // Quando um dado muda em outro dispositivo, atualiza a variável local certa e re-renderiza
         function czkAplicarDadosRecebidos(key, value) {
             switch(key) {
-                case 'czk_produtos': produtos = value; renderCardapio("promocao"); renderCarrosselAnimado(); renderAdminProdutos(); if (document.getElementById("estoque-admin")?.classList.contains("active")) renderEstoqueReceitasAdmin(); break;
+                case 'czk_produtos': if(Array.isArray(value)) { produtos = value; renderCardapio("promocao"); renderCarrosselAnimado(); renderAdminProdutos(); if (document.getElementById("estoque-admin")?.classList.contains("active")) renderEstoqueReceitasAdmin(); } break; renderCarrosselAnimado(); renderAdminProdutos(); if (document.getElementById("estoque-admin")?.classList.contains("active")) renderEstoqueReceitasAdmin(); break;
                 case 'czk_ingredientes': ingredientes = value || []; atualizarBadgeEstoqueBaixo(); if (document.getElementById("estoque-admin")?.classList.contains("active")) { renderEstoqueProdutosAdmin(); renderEstoqueReceitasAdmin(); } break;
                 case 'czk_pedidos': {
                     const idsAntigos = new Set(historicoPedidos.map(p => p.id));
@@ -2657,7 +2696,68 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             atualizarTaxaMaquininha(); atualizarExibicaoPix(); atualizarExibicaoBrickCartao(); atualizarCamposTroco(); atualizarEstimativaTempo();
             return sub;
         }
-        function abrirModalCarrinho() {
+                                        function czkRemoverItensEsgotadosDoCarrinho() {
+            const antes = carrinho.length;
+            carrinho = carrinho.filter(item => {
+                const p = produtos.find(pr => String(pr.id) === String(item.id));
+                if (!p) return true;
+                return !produtoEstaEsgotado(p);
+            });
+            if (carrinho.length !== antes) atualizarTotal();
+        }
+
+        function abrirModalCarrinhoComOferta() {
+            if(carrinho.length === 0) return czkAlert("Carrinho vazio!");
+            // Valida estoque ANTES de abrir ofertas/carrinho. Se algum item esgotou
+            // enquanto o cliente escolhia, avisa e — ao clicar OK — remove os itens
+            // esgotados e volta pro fluxo de ofertas com o que sobrou.
+            const erroEstoque = validarEstoqueCarrinho();
+            if(erroEstoque) {
+                return czkAlert(`⚠️ ${erroEstoque}`, () => {
+                    czkRemoverItensEsgotadosDoCarrinho();
+                    if(carrinho.length > 0) abrirModalCarrinhoComOferta();
+                });
+            }
+            if(!modoMesaAtivo && (!clienteAtual || !clienteAtual.enderecos || clienteAtual.enderecos.length === 0)) {
+                czkAlert("Cadastre pelo menos um endereço antes de fazer um pedido.");
+                abrirModalEnderecos();
+                return;
+            }
+            if (modoMesaAtivo) { abrirModalCarrinho(); return; }
+            const ofertas = czkMontarOfertasDescontoDoCarrinho().filter(o => {
+                const prod = produtos.find(p => p.id === o.produtoId);
+                if (!prod) return false;
+                if (carrinho.some(item => item.id === o.produtoId)) return false;
+                return true;
+            });
+            if (ofertas.length === 0) { abrirModalCarrinho(); return; }
+            window._czkAbrirCarrinhoDepoisDasOfertas = true;
+            renderizarOfertasDesconto(ofertas);
+            const modalOfertas = document.getElementById('modal-ofertas-desconto');
+            if (modalOfertas && modalOfertas.parentElement && modalOfertas.parentElement.id === "app-shell") {
+                document.body.appendChild(modalOfertas);
+            }
+            modalOfertas.style.display = 'flex';
+        }
+        function abrirModalCarrinho(ignorarValidacao) {
+            if(!ignorarValidacao && carrinho.length > 0) {
+                const erroEstoqueAgora = validarEstoqueCarrinho();
+                if(erroEstoqueAgora) return czkAlert(`⚠️ ${erroEstoqueAgora}`, () => {
+                    czkRemoverItensEsgotadosDoCarrinho();
+                    if(carrinho.length > 0) abrirModalCarrinhoComOferta();
+                });
+            }
+            // Tira o modal de dentro do #app-shell (na primeira vez que abre): no computador/tablet,
+            // o #app-shell usa "contain: layout", que faz o modal se centralizar dentro dele
+            // (que é mais alto que a tela por causa do cardápio) em vez de na tela visível.
+            const modalCarrinho = document.getElementById("modal-carrinho");
+            if(modalCarrinho && modalCarrinho.parentElement && modalCarrinho.parentElement.id === "app-shell") {
+                document.body.appendChild(modalCarrinho);
+            }
+            // Remove qualquer cópia fantasma do modal-carrinho que tenha sido criada
+            // (proteção contra duplicação acidental que pode gerar faixas "Seu Carrinho" sobrepostas).
+            const copias = document.querySelectorAll('#modal-carrinho');
+            copias.forEach((el, idx) => { if(idx > 0) el.remove(); });
             if(carrinho.length === 0) return czkAlert("Carrinho vazio!");
             if(!modoMesaAtivo && (!clienteAtual || !clienteAtual.enderecos || clienteAtual.enderecos.length === 0)) {
                 czkAlert("Cadastre pelo menos um endereço antes de fazer um pedido.");
@@ -2670,7 +2770,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             lembrarCupomDisponivelNoCarrinho(sub);
             // DESATIVADO: verificarOfertaComboCarrinho() - Sistema antigo de 1 produto
             // ATIVADO: Sistema novo com 3 opções de desconto
-            setTimeout(verificarOfertasDescontoCarrinho, 700); // Mostrar as 3 opções de desconto
+          
         }
         function fecharModalCarrinho() { document.getElementById("modal-carrinho").style.display = "none"; pararPollingPix(); }
 
@@ -2882,11 +2982,19 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             // Assim que o cliente escolhe UMA das 3 ofertas, a janela fecha na hora — é a
             // oportunidade de desconto dele, ele já garantiu, e cai direto na tela do carrinho
             // (que já está aberta por baixo) pra conferir e finalizar o pedido.
-            document.getElementById('modal-ofertas-desconto').style.display = 'none';
+                        document.getElementById('modal-ofertas-desconto').style.display = 'none';
+            if (window._czkAbrirCarrinhoDepoisDasOfertas) {
+                window._czkAbrirCarrinhoDepoisDasOfertas = false;
+                abrirModalCarrinho();
+            }
         }
 
         function fecharOfertasDesconto() {
             document.getElementById('modal-ofertas-desconto').style.display = 'none';
+            if (window._czkAbrirCarrinhoDepoisDasOfertas) {
+                window._czkAbrirCarrinhoDepoisDasOfertas = false;
+                abrirModalCarrinho();
+            }
         }
         // Junta os cupons pessoais ativos desse cliente com os cupons gerais em destaque
         // (sem repetir código), montando a lista de "cupons disponíveis" mostrada dentro
@@ -3065,7 +3173,11 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
 
         // Abre a tela de "Confira seu pedido" com um resumo final (itens, endereço,
         // pagamento, troco, observações e tempo estimado) antes de enviar de verdade.
-        function abrirConfirmacaoPedido(metodo, dadosEndereco, dadosPagamentoExtra) {
+                function abrirConfirmacaoPedido(metodo, dadosEndereco, dadosPagamentoExtra) {
+            const modalConfirma = document.getElementById("modal-confirmar-pedido");
+            if (modalConfirma && modalConfirma.parentElement && modalConfirma.parentElement.id === "app-shell") {
+                document.body.appendChild(modalConfirma);
+            }
             _czkPedidoPendente = { metodo, dadosEndereco, dadosPagamentoExtra: dadosPagamentoExtra || {} };
             const { tipo, enderecoCompleto, cidade, bairro } = dadosEndereco;
             const sub = carrinho.reduce((s,i) => s + (i.preco * i.quantidade), 0);
@@ -3236,7 +3348,11 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         // Preenche a tela de "pedido enviado" — no modo mesa mostra o total corrente da
         // comanda (a soma de tudo que já foi pedido naquela mesa) e o botão "Pedir mais"
         // (fica no mesmo cardápio, sem tela de acompanhamento de entrega/mapa).
-        function exibirTelaPedidoEnviado(pedido) {
+                function exibirTelaPedidoEnviado(pedido) {
+            const modalEnviado = document.getElementById("modal-pedido-enviado");
+            if(modalEnviado && modalEnviado.parentElement && modalEnviado.parentElement.id === "app-shell") {
+                document.body.appendChild(modalEnviado);
+            }
             const tituloEl = document.getElementById("titulo-pedido-enviado");
             const msgEl = document.getElementById("msg-pedido-enviado");
             const blocoComanda = document.getElementById("bloco-comanda-pedido-enviado");
@@ -3297,9 +3413,14 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 await desmontarCardBrick();
                 return;
             }
-            // Cliente escolheu pagar com cartão: agora sim carregamos o SDK do
-            // Mercado Pago (se ainda não estiver carregado) antes de seguir.
-            await czkGarantirMercadoPago();
+            // Carrega o SDK do Mercado Pago só agora, na primeira vez que o cliente escolheu cartão
+            if(!mp) {
+                btnConfirmar.classList.add("hidden");
+                wrap.classList.remove("hidden");
+                const containerBrick = document.getElementById("cardPaymentBrick_container");
+                if(containerBrick) containerBrick.innerHTML = `<p class="text-white/60 text-sm text-center py-6"><i class="fas fa-circle-notch fa-spin mr-2"></i> Carregando formulário de pagamento...</p>`;
+                await czkCarregarMercadoPago();
+            }
             if(!mp) {
                 wrap.classList.add("hidden");
                 btnConfirmar.classList.remove("hidden");
@@ -6544,7 +6665,11 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             reader.readAsDataURL(file);
         }
 
-        function salvarLogomarca() { logomarca.texto = document.getElementById("logo-texto").value.trim() || "CZK MAKI"; logomarca.estilo = document.getElementById("logo-estilo").value; logomarca.subtitulo = document.getElementById("subtitulo-texto").value.trim(); logomarca.tamanho = parseInt(document.getElementById("logo-tamanho-range").value) || 100; logomarca.alturaHeaderPct = parseInt(document.getElementById("header-altura-range").value) || 100; const fileInput = document.getElementById("upload-logo"); if(fileInput.files.length > 0) { const file = fileInput.files[0]; const reader = new FileReader(); reader.onload = e => { logomarca.imagemBase64 = e.target.result; if(file.type.startsWith('video/')) { logomarca.tipo = 'video'; } else { logomarca.tipo = 'image'; } czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); if(logomarca.tipo === 'video') { document.getElementById("preview-logo-area").innerHTML = `<video src="${logomarca.imagemBase64}" autoplay loop muted playsinline style="max-height:80px; max-width:120px; border-radius:12px;"></video>`; } else { document.getElementById("preview-logo-area").innerHTML = `<img src="${logomarca.imagemBase64}" class="logo-preview">`; } atualizarPreviewTamanho(); }; reader.readAsDataURL(file); } else { czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); atualizarPreviewTamanho(); } }
+        function salvarLogomarca() { logomarca.texto = document.getElementById("logo-texto").value.trim() || "CZK MAKI"; logomarca.estilo = document.getElementById("logo-estilo").value; logomarca.subtitulo = document.getElementById("subtitulo-texto").value.trim(); logomarca.tamanho = parseInt(document.getElementById("logo-tamanho-range").value) || 100; logomarca.alturaHeaderPct = parseInt(document.getElementById("header-altura-range").value) || 100; const fileInput = document.getElementById("upload-logo"); if(fileInput.files.length > 0) { const file = fileInput.files[0];
+            const finalizar = (base64, tipo) => { logomarca.imagemBase64 = base64; logomarca.tipo = tipo; czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); if(logomarca.tipo === 'video') { document.getElementById("preview-logo-area").innerHTML = `<video src="${logomarca.imagemBase64}" autoplay loop muted playsinline style="max-height:80px; max-width:120px; border-radius:12px;"></video>`; } else { document.getElementById("preview-logo-area").innerHTML = `<img src="${logomarca.imagemBase64}" class="logo-preview">`; } atualizarPreviewTamanho(); };
+            if(file.type.startsWith('video/')) { const reader = new FileReader(); reader.onload = e => finalizar(e.target.result, 'video'); reader.readAsDataURL(file); }
+            else { czkComprimirImagem(file, 600, 600, 0.88).then(base64 => finalizar(base64, 'image')).catch(() => { const reader = new FileReader(); reader.onload = e => finalizar(e.target.result, 'image'); reader.readAsDataURL(file); }); }
+        } else { czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); atualizarPreviewTamanho(); } }
 
         // FUNDO
         let bgConfig = { url: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?q=80&w=2070&auto=format", overlayColor1: "#1e1e23", overlayColor2: "#141419", overlayOpacity: 0.7, brightness: 0.35, nitidez: 70 };
@@ -6818,17 +6943,12 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 window._czkCustomizacaoListenersAtivos = true;
                 document.getElementById("czk-cor-principal").addEventListener("input", atualizarPreviewCustomizacao);
                 document.getElementById("czk-icone-app").addEventListener("input", atualizarPreviewCustomizacao);
-                document.getElementById("czk-icone-app-upload").addEventListener("change", function(e) {
+                                document.getElementById("czk-icone-app-upload").addEventListener("change", function(e) {
                     const file = e.target.files[0];
                     const nomeEl = document.getElementById("czk-icone-app-upload-nome");
                     if(!file) { if(nomeEl) nomeEl.innerText = "Nenhum arquivo"; return; }
                     if(nomeEl) nomeEl.innerText = file.name;
-                    const reader = new FileReader();
-                    reader.onload = ev => {
-                        iconeAppImagemPendente = ev.target.result;
-                        atualizarPreviewCustomizacao();
-                    };
-                    reader.readAsDataURL(file);
+                    czkComprimirImagem(file, 512, 512, 0.9).then(base64 => { iconeAppImagemPendente = base64; atualizarPreviewCustomizacao(); }).catch(() => { const reader = new FileReader(); reader.onload = ev => { iconeAppImagemPendente = ev.target.result; atualizarPreviewCustomizacao(); }; reader.readAsDataURL(file); });
                 });
                 document.getElementById("czk-tamanho-carrinho").addEventListener("input", function() {
                     document.getElementById("czk-tamanho-carrinho-valor").textContent = this.value + "px";
@@ -6928,7 +7048,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             renderCarrosselAnimado();
             czkAlert("Aparência salva e aplicada no app do cliente!");
         }
-        document.getElementById("upload-bg")?.addEventListener("change", e => { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => { document.getElementById("bg-url").value = ev.target.result; bgConfig.url = ev.target.result; aplicarFundo(); document.getElementById("preview-bg-img").src = ev.target.result; czkAlert("Imagem carregada. Salve para persistir."); }; reader.readAsDataURL(e.target.files[0]); } });
+        document.getElementById("upload-bg")?.addEventListener("change", e => { if(e.target.files[0]) { const file = e.target.files[0]; czkComprimirImagem(file, 1600, 1600, 0.82).then(base64 => { document.getElementById("bg-url").value = base64; bgConfig.url = base64; aplicarFundo(); document.getElementById("preview-bg-img").src = base64; czkAlert("Imagem carregada e comprimida. Salve para persistir."); }).catch(() => { const reader = new FileReader(); reader.onload = ev => { document.getElementById("bg-url").value = ev.target.result; bgConfig.url = ev.target.result; aplicarFundo(); document.getElementById("preview-bg-img").src = ev.target.result; czkAlert("Imagem carregada. Salve para persistir."); }; reader.readAsDataURL(file); }); } });
         function atualizarValores() { document.getElementById("opacity-value").innerText = document.getElementById("overlay-opacity").value; document.getElementById("brightness-value").innerText = document.getElementById("bg-brightness").value; const nEl = document.getElementById("bg-nitidez"); const nLabel = document.getElementById("nitidez-value"); if(nEl && nLabel) nLabel.innerText = nEl.value + "%"; }
         document.getElementById("overlay-opacity")?.addEventListener("input", atualizarValores); document.getElementById("bg-brightness")?.addEventListener("input", atualizarValores);
         document.getElementById("bg-nitidez")?.addEventListener("input", () => { atualizarValores(); bgConfig.nitidez = parseFloat(document.getElementById("bg-nitidez").value); aplicarFundo(); });
@@ -7014,7 +7134,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
 
         // Lê a imagem escolhida no aparelho do lojista e ENVIA PRA NUVEM (Supabase Storage) —
         // guarda só o link público até o Salvar, em vez do arquivo inteiro em base64.
-        async function carregarImagemPromoEmoji(event) {
+               async function carregarImagemPromoEmoji(event) {
             const file = event.target.files && event.target.files[0];
             const statusEl = document.getElementById("promo-emoji-imagem-status");
             if(!file) { if(statusEl) statusEl.innerText = "Nenhuma imagem enviada ainda."; return; }
@@ -7023,20 +7143,17 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 event.target.value = "";
                 return;
             }
-            if(statusEl) { statusEl.innerText = "⏳ Enviando imagem pra nuvem..."; statusEl.classList.remove("text-red-400"); }
+            if(statusEl) { statusEl.innerText = "⏳ Comprimindo imagem..."; statusEl.classList.remove("text-red-400"); }
             try {
-                const urlPublica = await czkUploadArquivoStorage(file, "promo-imagem");
-                promoNotifImagemTemp = urlPublica;
-                if(statusEl) { statusEl.innerText = "✓ " + file.name + " enviada pra nuvem. Veja a prévia ao lado."; statusEl.classList.remove("text-red-400"); }
+                const base64 = await czkComprimirImagem(file, 400, 400, 0.85);
+                promoNotifImagemTemp = base64;
+                if(statusEl) { statusEl.innerText = "✓ Imagem comprimida e pronta. Clique em Salvar pra confirmar."; statusEl.classList.remove("text-red-400"); }
                 atualizarPreviewPromo();
-            } catch(erroUpload) {
-                console.error("[carregarImagemPromoEmoji] erro no upload:", erroUpload);
-                if(statusEl) { statusEl.innerText = "❌ Não foi possível enviar essa imagem pra nuvem. Tente novamente."; statusEl.classList.add("text-red-400"); }
-                alert("Não foi possível enviar essa imagem pra nuvem. Verifique sua internet e tente de novo. (Se o erro persistir, confirme que o bucket \"czk-midia\" existe e está marcado como Público no Supabase.)");
-                event.target.value = "";
+            } catch(erro) {
+                console.error("[carregarImagemPromoEmoji]", erro);
+                if(statusEl) { statusEl.innerText = "❌ Não foi possível processar essa imagem."; statusEl.classList.add("text-red-400"); }
             }
-        }
-
+            }
         // Alterna entre notificação tipo "cartão" (texto/emoji) ou "vídeo" (tela cheia) na tela de login
         let promoNotifVideoTemp = ""; // guarda o vídeo recém-escolhido (base64) até o Salvar
         function definirTipoNotifPromo(tipo) {
@@ -8037,7 +8154,13 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         }
         // Ajusta a interface do cliente pro modo mesa: selo fixo no topo + esconde
         // tudo que não se aplica a pedido de salão (endereço, frete, forma de pagamento).
-        function aplicarModoMesaNaTela() {
+                function aplicarModoMesaNaTela() {
+            // Garante que nenhuma tela de login/acesso (Área Restrita, login de admin,
+            // entregador, garçom, etc.) fique por cima do cardápio em modo mesa/volante.
+            ["screen-login","screen-auth","modal-proprietario","modal-admin-login","modal-entregador","modal-cozinha","modal-mesas-login","modal-garcom","modal-desenvolvedor"].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.style.display = "none";
+            });
             const selo = document.getElementById("selo-modo-mesa");
             if(selo) {
                 selo.classList.remove("hidden");
@@ -8212,39 +8335,38 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         let _czkScannerAvisouDemora = false;
         let _czkScannerParaChamarGarcom = false; // true quando o QR está sendo escaneado pra CHAMAR o garçom, não pra enviar um pedido
 
-        // LAZY LOAD: o jsQR (~30KB) só é injetado na página quando o scanner de QR é
-        // realmente aberto (chamado, com fallback pro espelho no unpkg, uma única vez).
-        // Antes ele vinha fixo no <head> e pesava pra TODO cliente, mesmo quem nunca
-        // escaneia mesa/QR.
-        let _czkJsQrInjetado = false;
-        function czkGarantirJsQR() {
-            if (_czkJsQrInjetado) return;
-            _czkJsQrInjetado = true;
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js';
-            s.onerror = function () {
-                this.onerror = null;
-                const s2 = document.createElement('script');
-                s2.src = 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';
-                s2.onerror = function () { window._czkJsQrFalhou = true; };
-                document.head.appendChild(s2);
-            };
-            document.head.appendChild(s);
-        }
-
-        function abrirScannerMesaVolante(validado) {
+                function abrirScannerMesaVolante(validado) {
             _czkValidadoMesaVolante = validado;
             const statusEl = document.getElementById("scanner-mesa-status");
-            document.getElementById("modal-scanner-mesa").style.display = "flex";
+            const modal = document.getElementById("modal-scanner-mesa");
+            // Tira o modal de dentro do #app-shell (na primeira vez que abre): no computador/tablet
+            // grande, o #app-shell usa "contain: layout", que faz o modal se centralizar dentro dele
+            // (que é mais alto que a tela por causa do cardápio) em vez de centralizar na tela visível.
+            // Movendo pro <body>, ele centraliza de verdade.
+            if(modal && modal.parentElement && modal.parentElement.id === "app-shell") {
+                document.body.appendChild(modal);
+            }
+            modal.style.position = "fixed";
+            modal.style.top = "0";
+            modal.style.left = "0";
+            modal.style.right = "0";
+            modal.style.bottom = "0";
+            modal.style.width = "100vw";
+            modal.style.height = "100dvh";
+            modal.style.alignItems = "center";
+            modal.style.justifyContent = "center";
+            modal.style.display = "flex";
             const video = document.getElementById("scanner-mesa-video");
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 statusEl.innerText = "Este navegador não permite acessar a câmera aqui. Peça pro lojista atualizar o app do tablet.";
                 return;
             }
-            czkGarantirJsQR();
-            // O leitor de QR depende de uma biblioteca (jsQR) carregada da internet. Se a conexão
-            // do tablet estiver ruim ou bloqueando o CDN, ela pode não ter carregado ainda — espera
-            // até 6s por ela antes de desistir, em vez de abrir a câmera e nunca reconhecer nada.
+                        // O leitor de QR depende de uma biblioteca (jsQR) carregada da internet.
+            // Ela agora é baixada só agora, na primeira vez que este leitor é aberto.
+            czkCarregarJsQR();
+            // Se a conexão do tablet estiver ruim ou bloqueando o CDN, a biblioteca pode
+            // demorar — espera até 6s por ela antes de desistir, em vez de abrir a câmera
+            // e nunca reconhecer nada.
             statusEl.innerText = "Carregando leitor de QR Code...";
             let tentativas = 0;
             const esperarJsQR = setInterval(() => {
@@ -9836,7 +9958,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const linhaSumidos = d.sumidos.map(c => `<tr><td>${c.nome}</td><td>${c.whatsapp || ''}</td><td>${c.qtd}</td><td>R$ ${c.total.toFixed(2)}</td><td>${c.diasSemPedido} dias</td></tr>`).join('') || '<tr><td colspan="5">Nenhum cliente sumido — todo mundo comprou nos últimos 30 dias</td></tr>';
             const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
                 <head><meta charset="utf-8"><title>Relatório e Métricas</title>
-                <style>body{font-family:Calibri,Arial,sans-serif;} h1{color:#0f9d70;} h2{color:#16233d;margin-top:24px;} table{border-collapse:collapse;width:100%;margin-top:8px;} td,th{border:1px solid #999;padding:6px 10px;font-size:11pt;} th{background:#e8f5f0;font-weight:bold;}</style>
+                
                 </head><body>
                 <h1>Relatório e Métricas — ${d.titulo}</h1>
                 <table>
@@ -9975,7 +10097,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const linhas = d.todos.map(i => `<tr><td>${i.nome}</td><td>${Number(i.qtd) || 0}</td><td>${unidadeAbrev(i.unidade)}</td><td>${statusTexto(i)}</td></tr>`).join('');
             const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
                 <head><meta charset="utf-8"><title>Relatório de Estoque</title>
-                <style>body{font-family:Calibri,Arial,sans-serif;} h1{color:#0f9d70;} table{border-collapse:collapse;width:100%;margin-top:8px;} td,th{border:1px solid #999;padding:6px 10px;font-size:11pt;} th{background:#e8f5f0;font-weight:bold;}</style>
+                
                 </head><body>
                 <h1>Relatório de Estoque — ${obterDataAtualFormatada()}</h1>
                 <p>Total de insumos: <b>${d.totalTodos}</b> &nbsp;|&nbsp; Estoque normal: <b>${d.okTodos}</b> &nbsp;|&nbsp; Estoque baixo: <b>${d.baixoTodos}</b> &nbsp;|&nbsp; Esgotados: <b>${d.esgotadoTodos}</b></p>
@@ -10008,6 +10130,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             else if(tabId==='controle-entrega') renderControleEntregas(); 
             else if(tabId==='taxas-regioes') { renderTaxasAdmin(); renderizarCidadesAdmin(); }
             else if(tabId==='cupons-admin') renderCuponsAdmin();
+            else if(tabId==='cardapio-crud') { renderNichosAdminTabs(); renderAdminProdutos(); }
             else if(tabId==='estoque-admin') renderEstoqueAdmin();
             else if(tabId==='sorteios-admin') renderSorteiosAdmin();
             else if(tabId==='aparencia-config') inicializarAbaAparencia();
@@ -10315,9 +10438,43 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             elLabel.rows = linhas;
             elPreco.rows = linhas;
         }
-
-        function renderAdminProdutos() { const container = document.getElementById("admin-produtos-list"); if(!container) return; const listaFiltrada = nichoAdminAtual === "todos" ? produtos : produtos.filter(p => p.categoria === nichoAdminAtual); if(listaFiltrada.length === 0) { container.innerHTML = `<div class="text-center text-blue-400/70 text-sm py-8">Nenhum produto neste nicho ainda. Clique em "Novo Item" para adicionar.</div>`; return; } container.innerHTML = listaFiltrada.map(p => `<div class="bg-black/50 p-3 rounded-xl border border-blue-800"><label class="text-white/50 text-[10px] block mb-0.5">Nome do prato</label><input id="nome-${p.id}" value="${p.nome}" placeholder="Ex: Combinado Salmão 20 peças" class="w-full bg-black/60 rounded p-2 mb-1"><label class="text-white/50 text-[10px] block mb-0.5">Preço (R$)</label><input id="preco-${p.id}" value="${p.preco}" type="number" step="0.01" placeholder="Ex: 45.90" class="w-full bg-black/60 rounded p-2 mb-1"><label class="text-white/50 text-[10px] block mb-0.5">Aba / categoria do cardápio</label><select id="cat-${p.id}" class="w-full bg-black/60 rounded p-2 mb-1">${categoriasCardapio.map(nc => `<option value="${nc.key}" ${p.categoria===nc.key?'selected':''}>${nc.label}</option>`).join('')}</select><div class="flex items-center gap-2 bg-blue-950/40 border border-blue-700/40 rounded p-2 mb-1"><input type="checkbox" id="carrossel-${p.id}" ${(p.destaqueCarrossel ?? (p.categoria==='promocao')) ? 'checked' : ''} class="w-4 h-4 accent-blue-500"><label for="carrossel-${p.id}" class="text-blue-300 text-xs font-semibold"><i class="fas fa-fire mr-1"></i>Exibir no Carrossel de Destaques (promocional)</label></div><label class="text-white/50 text-[10px] block mb-0.5">Imagem do prato</label><div class="flex gap-2"><input id="img-url-${p.id}" value="${p.img}" class="flex-1 bg-black/60 rounded p-2 mb-1" placeholder="Cole a URL da imagem ou anexe um arquivo"><input type="file" id="img-file-${p.id}" accept="image/*" class="hidden"><button onclick="document.getElementById('img-file-${p.id}').click()" class="bg-blue-800 px-2 rounded"><i class="fas fa-paperclip"></i></button></div><label class="text-white/50 text-[10px] block mb-0.5">Descrição do prato</label><textarea id="desc-${p.id}" placeholder="Ex: 10 peças de salmão, 5 de kani e 5 hot rolls" class="w-full bg-black/60 rounded p-2 mb-1">${p.desc}</textarea><details class="mt-1" ontoggle="czkCarregarSlotsCombinarPreguicoso(this, ${p.id})"><summary class="text-blue-400 text-xs cursor-pointer">Opções avançadas (Tipo / Recheio / Acompanha)</summary><label class="text-white/50 text-[10px] block mt-2">Tipos — Rótulo e Preço lado a lado</label><div style="display:grid; grid-template-columns:minmax(0,220px) 100px; gap:6px; max-width:340px;"><span class="text-white/40 text-[9px]">Rótulo (nome da opção)</span><span class="text-white/40 text-[9px]">Preço (R$)</span><textarea id="tipos-label-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="${Math.max(3, (p.tipos||[]).length + 1)}" placeholder="1 unidade&#10;2 unidades&#10;3 unidades" oninput="czkSincronizarLinhasTipos(${p.id})">${(p.tipos||[]).map(t=>t.label).join('\n')}</textarea><textarea id="tipos-preco-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="${Math.max(3, (p.tipos||[]).length + 1)}" placeholder="R$ 40,50&#10;R$ 80,00&#10;R$ 129,90" oninput="czkSincronizarLinhasTipos(${p.id})">${(p.tipos||[]).map(t=>t.preco).join('\n')}</textarea></div><label class="text-white/50 text-[10px] block mt-2">Recheios — 1 por linha</label><textarea id="recheios-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="2" placeholder="Salmão cru">${(p.recheios||[]).join('\n')}</textarea><label class="text-white/50 text-[10px] block mt-2">Acompanha — 1 por linha, formato: emoji Rótulo</label><textarea id="acompanha-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="2" placeholder="🥒 Pepino">${(p.acompanhamentos||[]).map(a=>`${a.emoji} ${a.label}`).join('\n')}</textarea><label class="text-white/50 text-[10px] block mt-2">Itens para combinar — até 3 sugestões (exibidas ao cliente no carrinho, tipo "Deseja incluir X?"), cada uma com seu próprio desconto</label><div id="combinar-slots-${p.id}" data-carregado="0"><p class="text-white/30 text-[10px] italic mt-1">Abra esta seção pra carregar as opções de combinar.</p></div><p class="text-white/30 text-[9px] mt-1 leading-snug">Quando o cliente adicionar "${p.nome}" ao carrinho e abrir a tela pra finalizar o pedido, esses itens aparecem como sugestões com desconto — só os que ele ainda não tiver no carrinho. Deixe "Nenhum" pra não usar aquele slot.</p></details><button onclick="removerProduto(${p.id})" class="text-blue-400 text-sm mt-2">Remover</button></div>`).join(''); listaFiltrada.forEach(p => { document.getElementById(`img-file-${p.id}`)?.addEventListener("change", (e) => { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => { document.getElementById(`img-url-${p.id}`).value = ev.target.result; }; reader.readAsDataURL(e.target.files[0]); } }); }); }
-        // =========================================================================
+function czkComprimirImagem(file, maxW, maxH, qualidade) {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith('image/')) return reject(new Error('não é imagem'));
+        if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+            const r = new FileReader();
+            r.onload = e => resolve(e.target.result);
+            r.onerror = reject;
+            r.readAsDataURL(file);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                let w = img.width, h = img.height;
+                if (w > maxW || h > maxH) {
+                    const escala = Math.min(maxW / w, maxH / h);
+                    w = Math.round(w * escala);
+                    h = Math.round(h * escala);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                const tipoSaida = (file.type === 'image/png' && file.size < 200*1024) ? 'image/png' : 'image/jpeg';
+                resolve(canvas.toDataURL(tipoSaida, qualidade));
+            };
+            img.onerror = reject;
+            img.src = ev.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+        function renderAdminProdutos() { if(!Array.isArray(produtos)) produtos = []; const container = document.getElementById("admin-produtos-list"); if(!container) return; const listaFiltrada = nichoAdminAtual === "todos" ? produtos : produtos.filter(p => p.categoria === nichoAdminAtual); if(listaFiltrada.length === 0) { container.innerHTML = `<div class="text-center text-blue-400/70 text-sm py-8">Nenhum produto neste nicho ainda. Clique em "Novo Item" para adicionar.</div>`; return; } container.innerHTML = listaFiltrada.map(p => `<div class="bg-black/50 p-3 rounded-xl border border-blue-800"><label class="text-white/50 text-[10px] block mb-0.5">Nome do prato</label><input id="nome-${p.id}" value="${p.nome}" placeholder="Ex: Combinado Salmão 20 peças" class="w-full bg-black/60 rounded p-2 mb-1"><label class="text-white/50 text-[10px] block mb-0.5">Preço (R$)</label><input id="preco-${p.id}" value="${p.preco}" type="number" step="0.01" placeholder="Ex: 45.90" class="w-full bg-black/60 rounded p-2 mb-1"><label class="text-white/50 text-[10px] block mb-0.5">Aba / categoria do cardápio</label><select id="cat-${p.id}" class="w-full bg-black/60 rounded p-2 mb-1">${categoriasCardapio.map(nc => `<option value="${nc.key}" ${p.categoria===nc.key?'selected':''}>${nc.label}</option>`).join('')}</select><div class="flex items-center gap-2 bg-blue-950/40 border border-blue-700/40 rounded p-2 mb-1"><input type="checkbox" id="carrossel-${p.id}" ${(p.destaqueCarrossel ?? (p.categoria==='promocao')) ? 'checked' : ''} class="w-4 h-4 accent-blue-500"><label for="carrossel-${p.id}" class="text-blue-300 text-xs font-semibold"><i class="fas fa-fire mr-1"></i>Exibir no Carrossel de Destaques (promocional)</label></div><label class="text-white/50 text-[10px] block mb-0.5">Imagem do prato</label><div class="flex gap-2"><input id="img-url-${p.id}" value="${p.img}" class="flex-1 bg-black/60 rounded p-2 mb-1" placeholder="Cole a URL da imagem ou anexe um arquivo"><input type="file" id="img-file-${p.id}" accept="image/*" class="hidden"><button onclick="document.getElementById('img-file-${p.id}').click()" class="bg-blue-800 px-2 rounded"><i class="fas fa-paperclip"></i></button></div><label class="text-white/50 text-[10px] block mb-0.5">Descrição do prato</label><textarea id="desc-${p.id}" placeholder="Ex: 10 peças de salmão, 5 de kani e 5 hot rolls" class="w-full bg-black/60 rounded p-2 mb-1">${p.desc}</textarea><details class="mt-1" ontoggle="czkCarregarSlotsCombinarPreguicoso(this, ${p.id})"><summary class="text-blue-400 text-xs cursor-pointer">Opções avançadas (Tipo / Recheio / Acompanha)</summary><label class="text-white/50 text-[10px] block mt-2">Tipos — Rótulo e Preço lado a lado</label><div style="display:grid; grid-template-columns:minmax(0,220px) 100px; gap:6px; max-width:340px;"><span class="text-white/40 text-[9px]">Rótulo (nome da opção)</span><span class="text-white/40 text-[9px]">Preço (R$)</span><textarea id="tipos-label-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="${Math.max(3, (p.tipos||[]).length + 1)}" placeholder="1 unidade&#10;2 unidades&#10;3 unidades" oninput="czkSincronizarLinhasTipos(${p.id})">${(p.tipos||[]).map(t=>t.label).join('\n')}</textarea><textarea id="tipos-preco-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="${Math.max(3, (p.tipos||[]).length + 1)}" placeholder="R$ 40,50&#10;R$ 80,00&#10;R$ 129,90" oninput="czkSincronizarLinhasTipos(${p.id})">${(p.tipos||[]).map(t=>t.preco).join('\n')}</textarea></div><label class="text-white/50 text-[10px] block mt-2">Recheios — 1 por linha</label><textarea id="recheios-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="2" placeholder="Salmão cru">${(p.recheios||[]).join('\n')}</textarea><label class="text-white/50 text-[10px] block mt-2">Acompanha — 1 por linha, formato: emoji Rótulo</label><textarea id="acompanha-${p.id}" class="w-full bg-black/60 rounded p-2 text-xs" rows="2" placeholder="🥒 Pepino">${(p.acompanhamentos||[]).map(a=>`${a.emoji} ${a.label}`).join('\n')}</textarea><label class="text-white/50 text-[10px] block mt-2">Itens para combinar — até 3 sugestões (exibidas ao cliente no carrinho, tipo "Deseja incluir X?"), cada uma com seu próprio desconto</label><div id="combinar-slots-${p.id}" data-carregado="0"><p class="text-white/30 text-[10px] italic mt-1">Abra esta seção pra carregar as opções de combinar.</p></div><p class="text-white/30 text-[9px] mt-1 leading-snug">Quando o cliente adicionar "${p.nome}" ao carrinho e abrir a tela pra finalizar o pedido, esses itens aparecem como sugestões com desconto — só os que ele ainda não tiver no carrinho. Deixe "Nenhum" pra não usar aquele slot.</p></details><button onclick="removerProduto(${p.id})" class="text-blue-400 text-sm mt-2">Remover</button></div>`).join(''); listaFiltrada.forEach(p => { document.getElementById(`img-file-${p.id}`)?.addEventListener("change", async (e) => { const file = e.target.files[0]; if(!file) return; try { const dataUrl = await czkComprimirImagem(file, 800, 800, 0.82); document.getElementById(`img-url-${p.id}`).value = dataUrl; } catch(err) { console.warn('[Compressão] falhou, usando original', err); const reader = new FileReader(); reader.onload = ev => { document.getElementById(`img-url-${p.id}`).value = ev.target.result; }; reader.readAsDataURL(file); } }); });
+        }
+// =========================================================================
         //  ESTOQUE (por ficha técnica / receita)
         //  Agora o estoque é controlado em 2 níveis:
         //  1) INSUMOS (matéria-prima que o dono compra: arroz, nori, salmão, etc.),
@@ -10676,6 +10833,31 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             renderEstoqueRelatorio();
         }
         function removerProduto(id) { produtos = produtos.filter(p => p.id !== id); renderAdminProdutos(); }
+
+        function czkToggleTelaCheiaCardapio() {
+            const painel = document.getElementById('cardapio-crud');
+            const icone = document.getElementById('icone-cardapio-tela-cheia');
+            if (!painel) return;
+            const jaEstaCheio = painel.classList.contains('czk-cardapio-tela-cheia');
+            if (!jaEstaCheio) {
+                painel.classList.add('czk-cardapio-tela-cheia');
+                if (icone) { icone.classList.remove('fa-expand'); icone.classList.add('fa-compress'); }
+                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+            } else {
+                painel.classList.remove('czk-cardapio-tela-cheia');
+                if (icone) { icone.classList.add('fa-expand'); icone.classList.remove('fa-compress'); }
+                if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+            }
+        }
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                const painel = document.getElementById('cardapio-crud');
+                if (painel) painel.classList.remove('czk-cardapio-tela-cheia');
+                const icone = document.getElementById('icone-cardapio-tela-cheia');
+                if (icone) { icone.classList.add('fa-expand'); icone.classList.remove('fa-compress'); }
+            }
+        });
+
         function adicionarNovoProduto() { const novoId = Date.now(); const catFallback = (categoriasCardapio.find(c => c.key === "promocao") ? "promocao" : (categoriasCardapio[0]?.key || "promocao")); const catNovoProduto = (nichoAdminAtual === "todos" || !categoriasCardapio.some(c => c.key === nichoAdminAtual)) ? catFallback : nichoAdminAtual; produtos.push({ id:novoId, nome:"Novo Produto", preco:0, categoria:catNovoProduto, img:"https://placehold.co/300x200/red/white?text=Sushi", desc:"Descrição" }); renderAdminProdutos(); }
         // Interpreta preço digitado pelo dono da loja aceitando "R$ 40,50", "40,50" ou "40.50" sem perder os centavos
         function czkParsePreco(str) {
@@ -12011,7 +12193,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             // ---- Etapa 3: CARDÁPIO ----
             carregarClientesCadastrados();
             czkRestaurarSessaoClienteAdmin(); // login "lembrado": pula a tela de login se já tiver sessão salva neste aparelho
-            let p = czkGet("czk_produtos"); if(p && p.length) produtos = p;
+            let p = czkGet("czk_produtos"); if(Array.isArray(p)) produtos = p;
             let ings = czkGet("czk_ingredientes"); if(ings && ings.length) ingredientes = ings;
             let ncat = czkGet("czk_categorias_cardapio"); if(ncat && ncat.length) categoriasCardapio = ncat;
             c = czkGet("czk_config"); if(c && Object.keys(c).length) configEmpresa = c;
@@ -12157,7 +12339,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const wrapperBtn = document.getElementById("wrapper-cart-float-btn");
             if (!appCliente || !wrapperBtn) return;
 
-            const idsPaineisTrabalho = ['admin-panel', 'cozinha-panel', 'garcom-panel', 'entregador-panel'];
+            const idsPaineisTrabalho = ['admin-panel', 'cozinha-panel', 'garcom-panel', 'entregador-panel', 'modal-scanner-mesa'];
             const paineisTrabalho = idsPaineisTrabalho.map(id => document.getElementById(id)).filter(Boolean);
 
             function estaVisivel(el) {
@@ -12225,6 +12407,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const estaNoAdmin = window.location.pathname.replace(/\/+$/, '').endsWith('/admin');
             if (!estaNoAdmin) return;
             setTimeout(() => {
+                if (typeof modoMesaAtivo !== 'undefined' && modoMesaAtivo) return;
                 if (typeof adminLogado !== 'undefined' && !adminLogado
                     && typeof abrirLoginProprietario === 'function') {
                     abrirLoginProprietario();
@@ -12268,3 +12451,37 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 }
             }, 600);
         })();
+    
+
+        (function () {
+            let czkUltimoElementoRolado = null;
+            const czkBtnSubir = document.getElementById('czk-btn-subir');
+
+            function czkAoRolar(e) {
+                const alvo = e.target;
+                // só reage a elementos de fato roláveis (não o document inteiro sem necessidade)
+                const scrollTop = (alvo === document) ? window.scrollY : (alvo.scrollTop || 0);
+                if (scrollTop > 250) {
+                    czkUltimoElementoRolado = alvo;
+                    czkBtnSubir.style.display = 'flex';
+                } else if (alvo === czkUltimoElementoRolado || alvo === document) {
+                    czkBtnSubir.style.display = 'none';
+                }
+            }
+
+            // "true" no final = fase de captura, necessário pra pegar o scroll de qualquer
+            // painel/modal interno (eles não fazem o evento de scroll "borbulhar" normalmente)
+            document.addEventListener('scroll', czkAoRolar, true);
+            window.addEventListener('scroll', czkAoRolar, true);
+
+            window.czkVoltarAoTopo = function () {
+                const alvo = czkUltimoElementoRolado || document.scrollingElement || document.documentElement;
+                if (alvo && typeof alvo.scrollTo === 'function') {
+                    alvo.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                czkBtnSubir.style.display = 'none';
+            };
+        })();
+    
