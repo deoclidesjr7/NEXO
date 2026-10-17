@@ -10122,7 +10122,11 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             reader.readAsDataURL(file);
         }
 
-        function salvarLogomarca() { logomarca.texto = document.getElementById("logo-texto").value.trim() || "CZK MAKI"; logomarca.estilo = document.getElementById("logo-estilo").value; logomarca.subtitulo = document.getElementById("subtitulo-texto").value.trim(); logomarca.tamanho = parseInt(document.getElementById("logo-tamanho-range").value) || 100; logomarca.alturaHeaderPct = parseInt(document.getElementById("header-altura-range").value) || 100; const fileInput = document.getElementById("upload-logo"); if(fileInput.files.length > 0) { const file = fileInput.files[0]; const reader = new FileReader(); reader.onload = e => { logomarca.imagemBase64 = e.target.result; if(file.type.startsWith('video/')) { logomarca.tipo = 'video'; } else { logomarca.tipo = 'image'; } czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); if(logomarca.tipo === 'video') { document.getElementById("preview-logo-area").innerHTML = `<video src="${logomarca.imagemBase64}" autoplay loop muted playsinline style="max-height:80px; max-width:120px; border-radius:12px;"></video>`; } else { document.getElementById("preview-logo-area").innerHTML = `<img src="${logomarca.imagemBase64}" class="logo-preview">`; } atualizarPreviewTamanho(); }; reader.readAsDataURL(file); } else { czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); atualizarPreviewTamanho(); } }
+        function salvarLogomarca() { logomarca.texto = document.getElementById("logo-texto").value.trim() || "CZK MAKI"; logomarca.estilo = document.getElementById("logo-estilo").value; logomarca.subtitulo = document.getElementById("subtitulo-texto").value.trim(); logomarca.tamanho = parseInt(document.getElementById("logo-tamanho-range").value) || 100; logomarca.alturaHeaderPct = parseInt(document.getElementById("header-altura-range").value) || 100; const fileInput = document.getElementById("upload-logo"); if(fileInput.files.length > 0) { const file = fileInput.files[0];
+            const finalizar = (base64, tipo) => { logomarca.imagemBase64 = base64; logomarca.tipo = tipo; czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); if(logomarca.tipo === 'video') { document.getElementById("preview-logo-area").innerHTML = `<video src="${logomarca.imagemBase64}" autoplay loop muted playsinline style="max-height:80px; max-width:120px; border-radius:12px;"></video>`; } else { document.getElementById("preview-logo-area").innerHTML = `<img src="${logomarca.imagemBase64}" class="logo-preview">`; } atualizarPreviewTamanho(); };
+            if(file.type.startsWith('video/')) { const reader = new FileReader(); reader.onload = e => finalizar(e.target.result, 'video'); reader.readAsDataURL(file); }
+            else { czkComprimirImagem(file, 600, 600, 0.88).then(base64 => finalizar(base64, 'image')).catch(() => { const reader = new FileReader(); reader.onload = e => finalizar(e.target.result, 'image'); reader.readAsDataURL(file); }); }
+        } else { czkSave("czk_logomarca", logomarca); aplicarLogomarcaAuth(); aplicarLogomarcaApp(); aplicarAlturaHeaderCliente(); aplicarLogomarcaFooter(); aplicarIconeAppFavicon(customizacaoConfig); czkAlert("Logomarca salva!"); atualizarPreviewTamanho(); } }
 
         // FUNDO
         let bgConfig = { url: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?q=80&w=2070&auto=format", overlayColor1: "#1e1e23", overlayColor2: "#141419", overlayOpacity: 0.7, brightness: 0.35, nitidez: 70 };
@@ -10396,17 +10400,12 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 window._czkCustomizacaoListenersAtivos = true;
                 document.getElementById("czk-cor-principal").addEventListener("input", atualizarPreviewCustomizacao);
                 document.getElementById("czk-icone-app").addEventListener("input", atualizarPreviewCustomizacao);
-                document.getElementById("czk-icone-app-upload").addEventListener("change", function(e) {
+                                document.getElementById("czk-icone-app-upload").addEventListener("change", function(e) {
                     const file = e.target.files[0];
                     const nomeEl = document.getElementById("czk-icone-app-upload-nome");
                     if(!file) { if(nomeEl) nomeEl.innerText = "Nenhum arquivo"; return; }
                     if(nomeEl) nomeEl.innerText = file.name;
-                    const reader = new FileReader();
-                    reader.onload = ev => {
-                        iconeAppImagemPendente = ev.target.result;
-                        atualizarPreviewCustomizacao();
-                    };
-                    reader.readAsDataURL(file);
+                    czkComprimirImagem(file, 512, 512, 0.9).then(base64 => { iconeAppImagemPendente = base64; atualizarPreviewCustomizacao(); }).catch(() => { const reader = new FileReader(); reader.onload = ev => { iconeAppImagemPendente = ev.target.result; atualizarPreviewCustomizacao(); }; reader.readAsDataURL(file); });
                 });
                 document.getElementById("czk-tamanho-carrinho").addEventListener("input", function() {
                     document.getElementById("czk-tamanho-carrinho-valor").textContent = this.value + "px";
@@ -10506,7 +10505,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             renderCarrosselAnimado();
             czkAlert("Aparência salva e aplicada no app do cliente!");
         }
-        document.getElementById("upload-bg")?.addEventListener("change", e => { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => { document.getElementById("bg-url").value = ev.target.result; bgConfig.url = ev.target.result; aplicarFundo(); document.getElementById("preview-bg-img").src = ev.target.result; czkAlert("Imagem carregada. Salve para persistir."); }; reader.readAsDataURL(e.target.files[0]); } });
+        document.getElementById("upload-bg")?.addEventListener("change", e => { if(e.target.files[0]) { const file = e.target.files[0]; czkComprimirImagem(file, 1600, 1600, 0.82).then(base64 => { document.getElementById("bg-url").value = base64; bgConfig.url = base64; aplicarFundo(); document.getElementById("preview-bg-img").src = base64; czkAlert("Imagem carregada e comprimida. Salve para persistir."); }).catch(() => { const reader = new FileReader(); reader.onload = ev => { document.getElementById("bg-url").value = ev.target.result; bgConfig.url = ev.target.result; aplicarFundo(); document.getElementById("preview-bg-img").src = ev.target.result; czkAlert("Imagem carregada. Salve para persistir."); }; reader.readAsDataURL(file); }); } });
         function atualizarValores() { document.getElementById("opacity-value").innerText = document.getElementById("overlay-opacity").value; document.getElementById("brightness-value").innerText = document.getElementById("bg-brightness").value; const nEl = document.getElementById("bg-nitidez"); const nLabel = document.getElementById("nitidez-value"); if(nEl && nLabel) nLabel.innerText = nEl.value + "%"; }
         document.getElementById("overlay-opacity")?.addEventListener("input", atualizarValores); document.getElementById("bg-brightness")?.addEventListener("input", atualizarValores);
         document.getElementById("bg-nitidez")?.addEventListener("input", () => { atualizarValores(); bgConfig.nitidez = parseFloat(document.getElementById("bg-nitidez").value); aplicarFundo(); });
@@ -10592,7 +10591,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
 
         // Lê a imagem escolhida no aparelho do lojista e ENVIA PRA NUVEM (Supabase Storage) —
         // guarda só o link público até o Salvar, em vez do arquivo inteiro em base64.
-        async function carregarImagemPromoEmoji(event) {
+               async function carregarImagemPromoEmoji(event) {
             const file = event.target.files && event.target.files[0];
             const statusEl = document.getElementById("promo-emoji-imagem-status");
             if(!file) { if(statusEl) statusEl.innerText = "Nenhuma imagem enviada ainda."; return; }
@@ -10601,13 +10600,17 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 event.target.value = "";
                 return;
             }
-            if(statusEl) { statusEl.innerText = "⏳ Enviando imagem pra nuvem..."; statusEl.classList.remove("text-red-400"); }
+            if(statusEl) { statusEl.innerText = "⏳ Comprimindo imagem..."; statusEl.classList.remove("text-red-400"); }
             try {
-                const urlPublica = await czkUploadArquivoStorage(file, "promo-imagem");
-                promoNotifImagemTemp = urlPublica;
-                if(statusEl) { statusEl.innerText = "✓ " + file.name + " enviada pra nuvem. Veja a prévia ao lado."; statusEl.classList.remove("text-red-400"); }
+                const base64 = await czkComprimirImagem(file, 400, 400, 0.85);
+                promoNotifImagemTemp = base64;
+                if(statusEl) { statusEl.innerText = "✓ Imagem comprimida e pronta. Clique em Salvar pra confirmar."; statusEl.classList.remove("text-red-400"); }
                 atualizarPreviewPromo();
-            } catch(erroUpload) {
+            } catch(erro) {
+                console.error("[carregarImagemPromoEmoji]", erro);
+                if(statusEl) { statusEl.innerText = "❌ Não foi possível processar essa imagem."; statusEl.classList.add("text-red-400"); }
+            }
+        }
                 console.error("[carregarImagemPromoEmoji] erro no upload:", erroUpload);
                 if(statusEl) { statusEl.innerText = "❌ Não foi possível enviar essa imagem pra nuvem. Tente novamente."; statusEl.classList.add("text-red-400"); }
                 alert("Não foi possível enviar essa imagem pra nuvem. Verifique sua internet e tente de novo. (Se o erro persistir, confirme que o bucket \"czk-midia\" existe e está marcado como Público no Supabase.)");
