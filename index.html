@@ -10610,7 +10610,6 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 console.error("[carregarImagemPromoEmoji]", erro);
                 if(statusEl) { statusEl.innerText = "❌ Não foi possível processar essa imagem."; statusEl.classList.add("text-red-400"); }
             }
-        }
                 console.error("[carregarImagemPromoEmoji] erro no upload:", erroUpload);
                 if(statusEl) { statusEl.innerText = "❌ Não foi possível enviar essa imagem pra nuvem. Tente novamente."; statusEl.classList.add("text-red-400"); }
                 alert("Não foi possível enviar essa imagem pra nuvem. Verifique sua internet e tente de novo. (Se o erro persistir, confirme que o bucket \"czk-midia\" existe e está marcado como Público no Supabase.)");
