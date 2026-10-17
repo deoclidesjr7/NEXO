@@ -10610,7 +10610,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 console.error("[carregarImagemPromoEmoji]", erro);
                 if(statusEl) { statusEl.innerText = "❌ Não foi possível processar essa imagem."; statusEl.classList.add("text-red-400"); }
             }
-
+            }
         // Alterna entre notificação tipo "cartão" (texto/emoji) ou "vídeo" (tela cheia) na tela de login
         let promoNotifVideoTemp = ""; // guarda o vídeo recém-escolhido (base64) até o Salvar
         function definirTipoNotifPromo(tipo) {
