@@ -12117,9 +12117,11 @@ function czkComprimirImagem(file, maxW, maxH, qualidade) {
             // carregado em paralelo, por trás dela - não espera ela fechar pra começar.
             detectarModoMesa();
             carregarPromoNotif();
-            const czkVaiMostrarPromo = !clienteAtual
-                && document.getElementById("screen-login").style.display !== "none"
-                && !!promoNotifConfig.ativa;
+            const czkEstaNoAdminUrl = window.location.pathname.replace(/\/+$/, '').endsWith('/admin');
+const czkVaiMostrarPromo = !clienteAtual
+    && !czkEstaNoAdminUrl
+    && document.getElementById("screen-login").style.display !== "none"
+    && !!promoNotifConfig.ativa;
             if(czkVaiMostrarPromo) {
                 requestAnimationFrame(() => requestAnimationFrame(exibirNotificacaoPromo));
             }
