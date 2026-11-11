@@ -339,9 +339,11 @@
         }
 
         // Busca todas as chaves de uma vez só, no início do app
-        async function czkCarregarRemoto() {
+        async function czkCarregarRemoto(chaves) {
             try {
-                const { data, error } = await czkSupabase.from('czk_data').select('key,value');
+                let query = czkSupabase.from('czk_data').select('key,value');
+                if (chaves && chaves.length > 0) query = query.in('key', chaves);
+                const { data, error } = await query;
                 if(error) throw error;
                 (data || []).forEach(row => { czkRemoteData[row.key] = row.value; });
             } catch(e) {
@@ -12160,7 +12162,9 @@ function czkComprimirImagem(file, maxW, maxH, qualidade) {
             if(czkBiscoitoOrigem && czkBiscoitoDestino) czkBiscoitoDestino.src = czkBiscoitoOrigem.src;
 
             inicializarBairrosPadrao();
-            await czkCarregarRemoto(); // busca tudo do Supabase de uma vez (com fallback pro cache local se estiver offline)
+            // C5 - Busca apenas o essencial para abrir a tela rápido
+            const chavesEssenciais = ['czk_config', 'czk_logomarca', 'czk_produtos', 'czk_categorias_cardapio', 'czk_bg_config', 'czk_aparencia', 'czk_customizacao', 'czk_licenca'];
+            await czkCarregarRemoto(chavesEssenciais);
 
             if(!czkTemCacheLocal) {
                 // Não tinha cache local: só agora, com os dados reais do Supabase (ou o
@@ -12238,7 +12242,18 @@ function czkComprimirImagem(file, maxW, maxH, qualidade) {
             // trocar de nicho, renderHistorico ao editar pedido, etc.), então adiar a
             // primeira renderização é seguro.
             const czkAgendarOcioso = (fn) => ('requestIdleCallback' in window) ? requestIdleCallback(fn, {timeout: 1500}) : setTimeout(fn, 200);
-            czkAgendarOcioso(() => {
+            czkAgendarOcioso(async () => {
+                // C5 - Baixa o resto dos dados em segundo plano
+                const todasAsChaves = ['czk_pedidos', 'czk_contador_pedidos', 'czk_clientes', 'czk_entregadores', 'czk_mesas', 'czk_comandas', 'czk_garcons', 'czk_cidades', 'czk_taxas', 'czk_cupons', 'czk_ofertas_pessoais', 'czk_cupom_envios', 'czk_sorteios', 'czk_chat_suporte', 'czk_chat_suporte_meta', 'czk_localizacoes_entregadores', 'czk_geocache_enderecos', 'czk_chat_entregadores', 'czk_chamados_garcom', 'czk_promo_notif', 'czk_biscoito', 'czk_impressoras', 'czk_ingredientes'];
+                const chavesEssenciais = ['czk_config', 'czk_logomarca', 'czk_produtos', 'czk_categorias_cardapio', 'czk_bg_config', 'czk_aparencia', 'czk_customizacao', 'czk_licenca'];
+                const chavesRestantes = todasAsChaves.filter(c => !chavesEssenciais.includes(c));
+                await czkCarregarRemoto(chavesRestantes);
+                
+                // Atualiza as telas do admin/entregador com os dados novos
+                if(adminLogado) { renderHistorico(); renderPedidosAtivos(); renderControleEntregas(); renderCancelamentosAdmin(); renderPedidosFinalizadosAdmin(); renderPedidosRetiradaAdmin(); renderBalcaoAdmin(); }
+                if(entregadorLogado) { renderPedidosDisponiveis(); renderMinhasEntregas(); }
+                if(cozinhaLogada) { renderCozinhaPainel(); }
+                if(clienteAtual) { atualizarHistoricoCliente(); renderListaSuporteCliente(); }
                 let cs = czkGet("czk_chat_suporte"); if(cs) chatSuporte = cs;
                 let csm = czkGet("czk_chat_suporte_meta"); if(csm) chatSuporteMeta = csm;
                 let lic = czkGet("czk_licenca"); if(lic && Object.keys(lic).length) licencaConfig = czkMigrarPlanoAntigo(lic);
