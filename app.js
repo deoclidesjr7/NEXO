@@ -12250,6 +12250,12 @@ const czkVaiMostrarPromo = !clienteAtual
                 const chavesEssenciais = ['czk_config', 'czk_logomarca', 'czk_produtos', 'czk_categorias_cardapio', 'czk_bg_config', 'czk_aparencia', 'czk_customizacao', 'czk_licenca'];
                 const chavesRestantes = todasAsChaves.filter(c => !chavesEssenciais.includes(c));
                 await czkCarregarRemoto(chavesRestantes);
+
+                // Aplica nas variáveis os dados que acabaram de chegar do Supabase
+                // (sem isso, quem abre o site sem cache local via pedidos/clientes vazios)
+                const pedidosRemotos = czkGet("czk_pedidos"); if(Array.isArray(pedidosRemotos)) historicoPedidos = pedidosRemotos;
+                const contadorRemoto = czkGet("czk_contador_pedidos"); if(typeof contadorRemoto === "number") contadorPedidos = contadorRemoto;
+                carregarClientesCadastrados();
                 
                 // Atualiza as telas do admin/entregador com os dados novos
                 if(adminLogado) { renderHistorico(); renderPedidosAtivos(); renderControleEntregas(); renderCancelamentosAdmin(); renderPedidosFinalizadosAdmin(); renderPedidosRetiradaAdmin(); renderBalcaoAdmin(); }
