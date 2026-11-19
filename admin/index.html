@@ -458,14 +458,20 @@
 
                 <!-- Sub-abas: Cancelamentos / Em andamento / Conversas de suporte / Finalizados (ficam no
                      topo, separadas por uma linha, para não misturar visualmente com a lista de pedidos) -->
-                <div id="pedidos-subtabs-bar" class="flex gap-2 mb-4 flex-wrap">
+                <div id="pedidos-subtabs-bar" class="mb-4">
+                  <div id="pedidos-subtabs-tray">
+                    <nav id="pedidos-subtabs-nav" aria-label="Seções de pedidos">
                     <button id="subtab-btn-cancelamentos" onclick="switchSubTabPedidos('cancelamentos')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-ban text-red-400"></i> Cancelamentos <span id="contador-cancelamentos-badge" class="hidden bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-andamento" onclick="switchSubTabPedidos('andamento')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-fire"></i> Em andamento</button>
                     <button id="subtab-btn-suporte" onclick="switchSubTabPedidos('suporte')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-comment-dots"></i> Conversas de suporte <span id="contador-suporte-badge" class="hidden bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-retirada" onclick="switchSubTabPedidos('retirada')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-shopping-bag text-orange-400"></i> Retirada <span id="contador-retirada-badge" class="hidden bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-balcao" onclick="switchSubTabPedidos('balcao')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-cash-register text-amber-400"></i> Balcão <span id="contador-balcao-badge" class="hidden bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span></button>
                     <button id="subtab-btn-finalizados" onclick="switchSubTabPedidos('finalizados')" class="subtab-pedidos-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-check-double text-emerald-400"></i> Finalizados</button>
-                    <button id="btn-tela-cheia-pedidos" onclick="czkToggleTelaCheiaPedidos()" title="Tela cheia (mais espaço pra ver os pedidos)" class="ml-auto px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 text-sm font-semibold flex items-center gap-2 border border-white/15"><i id="icone-tela-cheia-pedidos" class="fas fa-expand"></i></button>
+                    </nav>
+                    <div id="pedidos-subtabs-tray-end">
+                        <button id="btn-tela-cheia-pedidos" onclick="czkToggleTelaCheiaPedidos()" title="Tela cheia (mais espaço pra ver os pedidos)" aria-label="Tela cheia" class="flex items-center"><i id="icone-tela-cheia-pedidos" class="fas fa-expand"></i></button>
+                    </div>
+                  </div>
                 </div>
                 <hr class="border-white/15 mb-6">
 
