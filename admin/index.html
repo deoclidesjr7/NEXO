@@ -61,7 +61,8 @@
          o <noscript> abaixo garante que os ícones carreguem do mesmo jeito. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"></noscript>
     <!-- Leaflet (mapa) e Chart.js (gráficos) NÃO são mais carregados aqui no <head>.
          São bibliotecas usadas só dentro do painel Admin/Entregador (mapa de rastreamento e aba de Relatórios),
@@ -352,6 +353,7 @@
         <div class="admin-panel-logo-badge" style="position:absolute; top:0; left:0; width:104px; height:92px; background:#fffdf6; border:1px solid rgba(16,26,44,0.14); border-bottom-right-radius:16px; box-shadow:0 10px 24px -10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:10; padding:8px;">
             <img src="logo-nexo.png" alt="NEXO" style="height:64px; width:auto;">
         </div>
+        <button id="btn-sair-admin" type="button" onclick="fecharAdmin()" class="czk-btn-sair-admin">Sair</button>
         <div class="max-w-6xl mx-auto">
             <div id="admin-panel-header" class="flex justify-between items-center border-b border-blue-800/40 pb-4 mb-7 flex-wrap gap-4" style="padding-left:160px;">
                 <div class="flex items-center gap-3 flex-wrap">
@@ -363,7 +365,7 @@
                 <div class="flex items-center gap-3 flex-wrap">
                     <button id="tab-btn-principal-pedidos" onclick="abrirAbaPrincipalAdmin('pedidos-ativos')" class="tab-admin-btn px-5 py-2 rounded-full bg-blue-900/40 text-blue-400 font-semibold flex items-center gap-2"><i class="fas fa-clipboard-list"></i> Pedidos</button>
                     <button id="tab-btn-principal-config" onclick="abrirMenuConfiguracoesAdmin()" class="tab-admin-btn px-5 py-2 rounded-full text-white/80 hover:text-white flex items-center gap-2"><i class="fas fa-gear"></i> <span id="tab-btn-config-label">Configurações</span> <i class="fas fa-chevron-down text-[10px] opacity-70"></i></button>
-                    <button onclick="fecharAdmin()" class="text-white/70 hover:text-blue-300 text-3xl modal-close-x font-bold">&times;</button>
+                    <button id="btn-tema-painel" type="button" onclick="czkAlternarTemaPainel()" title="Alternar modo dia / noite" aria-label="Alternar modo dia / noite" class="czk-btn-tema-painel"><i class="fas fa-sun icone-tema-sol"></i><i class="fas fa-moon icone-tema-lua"></i></button>
                 </div>
             </div>
 
@@ -2347,5 +2349,19 @@
     </button>
     
     <script src="../app.js"></script>
+    <script>
+    // Botão sol/lua do cabeçalho do admin: alterna dia/noite reaproveitando a "Cor Painel".
+    // Desliga o modo automático (senão a checagem de 1 em 1 min desfaria a troca); dá pra religar em Configurações > Cor Painel.
+    function czkAlternarTemaPainel() {
+        var novo = document.body.classList.contains('modo-painel-noite') ? 'dia' : 'noite';
+        try {
+            var cfg = czkGet('czk_cor_painel') || { horaDia: '06:00', horaNoite: '18:00' };
+            cfg.automatico = false; cfg.modoManual = novo;
+            czkSave('czk_cor_painel', cfg);
+            carregarConfigCorPainel();
+        } catch (e) {}
+        aplicarCorPainelModo(novo);
+    }
+    </script>
 </body>
 </html>
