@@ -1268,3 +1268,279 @@
 @media (prefers-reduced-motion: reduce) {
     #pedidos-subtabs-bar .subtab-pedidos-btn.bg-blue-600::before { animation: none; }
 }
+
+
+/* =====================================================================================
+   NEXO TECH — visual escuro/tecnológico da aba "Pedidos" (cabeçalho, barra de sub-abas,
+   cards, botões ABERTO/PAUSA). Só CSS, nenhum id/onclick/JS foi mexido.
+
+   - Só vale enquanto a aba Pedidos está ativa (#pedidos-ativos.active); nas outras abas
+     do admin tudo continua como antes.
+   - Modo noite (body.modo-painel-noite) = tema escuro. Modo dia = tema claro da referência.
+   - Cores/tokens em variáveis --tk-*; a barra de sub-abas reaproveita as variáveis --nx-*
+     do bloco "GRADIENT BUTTON GROUP" acima.
+   - Seletores usam :has() + ids para vencer os !important antigos (text-white forçado etc.).
+   ===================================================================================== */
+
+#admin-panel:has(#pedidos-ativos.active) {
+    --tk-bg:#e9eff9; --tk-surface:#ffffff; --tk-surface2:#f4f7fc;
+    --tk-line:rgba(30,60,120,.15); --tk-line2:rgba(30,60,120,.30);
+    --tk-fg:#0d1730; --tk-dim:#55637d; --tk-accent:#0891b2;
+    --tk-glow:rgba(8,145,178,.16); --tk-grid:rgba(30,60,120,.06);
+    --tk-cyan:#0e7490; --tk-blue:#1d4ed8; --tk-warn:#92400e; --tk-ok:#047857;
+    --tk-bad:#be123c; --tk-pink:#be185d; --tk-orange:#c2410c;
+    --tk-tray:linear-gradient(180deg,#d3dae8,#c9d1e2);
+    --tk-tray-shadow:inset 0 2px 6px rgba(0,0,0,.10), 0 1px 0 rgba(255,255,255,.6);
+    --tk-nav:linear-gradient(180deg,#ffffff,#fbfcff 55%,#f6f8fd);
+    --tk-nav-top:#ffffff; --tk-nav-shadow:0 10px 26px -12px rgba(13,23,48,.30);
+    --tk-well:#dfe5f1; --tk-gap:#eef2f9; --tk-input:#f4f7fc; --tk-hover:rgba(13,23,48,.06);
+    --tk-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --tk-head:'Space Grotesk',Inter,system-ui,sans-serif;
+    background-color:var(--tk-bg) !important;
+    background-image:radial-gradient(900px 420px at 18% -8%,var(--tk-glow),transparent 70%),
+                     linear-gradient(var(--tk-grid) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--tk-grid) 1px,transparent 1px) !important;
+    background-size:auto,44px 44px,44px 44px !important;
+}
+body.modo-painel-noite #admin-panel:has(#pedidos-ativos.active) {
+    --tk-bg:#060a13; --tk-surface:#0a1120; --tk-surface2:#0f1a2e;
+    --tk-line:rgba(120,165,255,.16); --tk-line2:rgba(120,165,255,.32);
+    --tk-fg:#e8eefb; --tk-dim:#93a3bf; --tk-accent:#22d3ee;
+    --tk-glow:rgba(34,211,238,.20); --tk-grid:rgba(110,150,255,.055);
+    --tk-cyan:#22d3ee; --tk-blue:#60a5fa; --tk-warn:#fbbf24; --tk-ok:#34d399;
+    --tk-bad:#fb7185; --tk-pink:#f472b6; --tk-orange:#fb923c;
+    --tk-tray:linear-gradient(180deg,#0b101d,#070b15);
+    --tk-tray-shadow:inset 0 2px 8px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.04);
+    --tk-nav:linear-gradient(180deg,#1a2236,#131a2b 55%,#0f1524);
+    --tk-nav-top:rgba(255,255,255,.10); --tk-nav-shadow:0 10px 30px rgba(0,0,0,.28);
+    --tk-well:#060910; --tk-gap:#0a0e18; --tk-input:#070d19; --tk-hover:rgba(255,255,255,.07);
+}
+
+/* ---------- CABEÇALHO ---------- */
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header { border-color:var(--tk-line) !important; }
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header h2 {
+    color:var(--tk-fg) !important; font-family:var(--tk-head); font-weight:600; letter-spacing:-.01em;
+}
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header .fa-sliders-h { color:var(--tk-accent); }
+
+/* ABERTO / FECHADO / PAUSA */
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-loja,
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-pausa {
+    display:inline-flex; align-items:center; gap:8px; height:34px;
+    border-radius:999px; border:1px solid var(--tk-line);
+    background:transparent; color:var(--tk-dim);
+    font-family:var(--tk-mono); font-weight:700; font-size:12px; letter-spacing:.12em;
+    box-shadow:none;
+}
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-loja i,
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-pausa i { color:currentColor; }
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-loja.toggle-aberto {
+    background:rgba(52,211,153,.14); border-color:rgba(52,211,153,.45); color:var(--tk-ok);
+    box-shadow:0 0 18px rgba(52,211,153,.25);
+}
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-loja.toggle-aberto i { color:var(--tk-ok); filter:drop-shadow(0 0 4px var(--tk-ok)); }
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-loja.toggle-fechado {
+    background:rgba(251,113,133,.14); border-color:rgba(251,113,133,.45); color:var(--tk-bad);
+    box-shadow:0 0 18px rgba(251,113,133,.22);
+}
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-loja.toggle-fechado i { color:var(--tk-bad); }
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-pausa.toggle-pausa-ativa {
+    background:rgba(251,191,36,.14); border-color:rgba(251,191,36,.45); color:var(--tk-warn);
+    box-shadow:0 0 18px rgba(251,191,36,.25);
+}
+#admin-panel:has(#pedidos-ativos.active) #btn-toggle-pausa.toggle-pausa-ativa i { color:var(--tk-warn); }
+
+/* Pedidos (ativo) / Configurações / fechar */
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header .tab-admin-btn {
+    color:var(--tk-fg) !important; background:transparent; border:1px solid transparent;
+    font-weight:600; border-radius:999px;
+}
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header .tab-admin-btn.bg-blue-900\/40 {
+    background:var(--tk-surface) !important; border-color:var(--tk-line2) !important;
+    box-shadow:0 0 20px var(--tk-glow);
+}
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header .tab-admin-btn.bg-blue-900\/40 i { color:var(--tk-accent); }
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header .modal-close-x { color:var(--tk-accent) !important; }
+
+/* ---------- BARRA DE SUB-ABAS (sem barras de rolagem) ---------- */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-subtabs-bar {
+    --nx-h:54px; --nx-px:22px; --nx-fs:15px; --nx-rb:20px; --nx-rn:26px; --nx-rt:30px;
+    --nx-tray-bg:var(--tk-tray); --nx-tray-shadow:var(--tk-tray-shadow);
+    --nx-nav-bg:var(--tk-nav); --nx-nav-top:var(--tk-nav-top); --nx-nav-shadow:var(--tk-nav-shadow);
+    --nx-text:var(--tk-fg); --nx-dim:var(--tk-dim); --nx-hover:var(--tk-hover);
+    --nx-well:var(--tk-well); --nx-well-edge:var(--tk-line); --nx-gap:var(--tk-gap);
+    --nx-gap-shadow:inset 0 1px 3px rgba(0,0,0,.35);
+    --nx-glow:rgba(34,211,238,.30);
+    --nx-ic-fire:var(--tk-blue); --nx-ic-red:var(--tk-bad); --nx-ic-orange:var(--tk-orange);
+    --nx-ic-amber:var(--tk-warn); --nx-ic-green:var(--tk-ok);
+    overflow-x:auto; overflow-y:hidden; padding:8px 14px 20px;
+    scrollbar-width:none; -ms-overflow-style:none;
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-subtabs-bar::-webkit-scrollbar { display:none; width:0; height:0; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-subtabs-bar .subtab-pedidos-btn { font-family:Inter,system-ui,sans-serif; }
+
+/* tela cheia: barra compacta e fixa, com o fundo do tema (em vez do azul-marinho) */
+#admin-panel.czk-pedidos-tela-cheia:has(#pedidos-ativos.active) #pedidos-subtabs-bar {
+    --nx-h:40px; --nx-px:16px; --nx-fs:13.5px; --nx-rb:15px; --nx-rn:20px; --nx-rt:24px;
+    background:var(--tk-bg); padding:10px 14px 12px;
+}
+#admin-panel.czk-pedidos-tela-cheia:has(#pedidos-ativos.active) #pedidos-subtabs-bar + hr { background:var(--tk-bg); border-color:var(--tk-line); }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-subtabs-bar + hr { border-color:var(--tk-line); }
+
+/* contadores (mono) */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-subtabs-bar [id^="contador-"]:not(.hidden) {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:24px; height:24px; padding:0 7px; border-radius:999px;
+    font-family:var(--tk-mono); font-size:12px; font-weight:700; line-height:1;
+}
+#admin-panel:has(#pedidos-ativos.active) #contador-cancelamentos-badge { background:#fb7185 !important; color:#1a0205 !important; }
+#admin-panel:has(#pedidos-ativos.active) #contador-suporte-badge       { background:#2563eb !important; color:#ffffff !important; }
+#admin-panel:has(#pedidos-ativos.active) #contador-retirada-badge      { background:#f97316 !important; color:#1a0b02 !important; }
+#admin-panel:has(#pedidos-ativos.active) #contador-balcao-badge        { background:#fbbf24 !important; color:#1a1203 !important; }
+
+/* ---------- CARTÃO PRINCIPAL ---------- */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos > .glass-card-solid {
+    background:var(--tk-surface) !important; border-color:var(--tk-line) !important; border-radius:24px;
+    box-shadow:0 24px 60px rgba(0,0,0,.25), 0 0 0 1px var(--tk-grid); backdrop-filter:none;
+}
+#admin-panel.czk-pedidos-tela-cheia:has(#pedidos-ativos.active) #pedidos-ativos > .glass-card-solid {
+    background:var(--tk-bg) !important; border-radius:0; border:0 !important; box-shadow:none;
+}
+#admin-panel.czk-pedidos-tela-cheia:has(#pedidos-ativos.active) #subtab-andamento-conteudo { background:transparent; }
+
+/* títulos e busca */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos h3 {
+    font-family:var(--tk-head); font-weight:600; letter-spacing:-.01em; color:var(--tk-blue) !important;
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos h3 i { color:var(--tk-accent); }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos h4 { font-family:var(--tk-head); font-weight:700; letter-spacing:.01em; }
+#admin-panel:has(#pedidos-ativos.active) #busca-pedidos-ativos {
+    background:var(--tk-input) !important; border:1px solid var(--tk-line2) !important; color:var(--tk-fg) !important; border-radius:12px;
+}
+#admin-panel:has(#pedidos-ativos.active) #busca-pedidos-ativos::placeholder { color:var(--tk-dim) !important; }
+#admin-panel:has(#pedidos-ativos.active) #busca-pedidos-ativos:focus { border-color:var(--tk-accent) !important; box-shadow:0 0 0 2px var(--tk-glow); }
+
+/* chips de contagem das colunas */
+#admin-panel:has(#pedidos-ativos.active) #contador-pedidos-novos {
+    font-family:var(--tk-mono); font-weight:700; background:rgba(251,191,36,.14) !important;
+    color:var(--tk-warn) !important; border:1px solid rgba(251,191,36,.4);
+}
+#admin-panel:has(#pedidos-ativos.active) #contador-pedidos-andamento {
+    font-family:var(--tk-mono); font-weight:700; background:rgba(59,130,246,.16) !important;
+    color:var(--tk-blue) !important; border:1px solid rgba(59,130,246,.45);
+}
+
+/* ---------- CARDS DE PEDIDO ---------- */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .bg-black\/40 {
+    background:var(--tk-surface2) !important; border-radius:16px; box-shadow:none;
+    transition:border-color .2s, box-shadow .2s;
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .bg-black\/40:hover {
+    box-shadow:0 0 0 1px var(--tk-line2), 0 10px 34px var(--tk-glow);
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .border-yellow-600\/60 { border-color:rgba(251,191,36,.50) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .border-blue-800\/50   { border-color:rgba(59,130,246,.55) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .border-orange-500\/70 { border-color:rgba(249,115,22,.50) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .border-red-600,
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .border-red-500        { border-color:rgba(251,113,133,.70) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .border-white\/10      { border-color:var(--tk-line) !important; }
+
+/* cores de texto (tema escuro/claro) */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-white           { color:var(--tk-fg) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-white\/80       { color:var(--tk-dim) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-white\/60,
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-white\/50       { color:var(--tk-dim) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .czk-itens-pedido-lista { color:var(--tk-dim) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-yellow-400      { color:var(--tk-warn) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-blue-400,
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-blue-300        { color:var(--tk-blue) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-cyan-400        { color:var(--tk-cyan) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-green-400       { color:var(--tk-ok) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-red-400         { color:var(--tk-bad) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-orange-300      { color:var(--tk-orange) !important; }
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .text-pink-400        { color:var(--tk-pink) !important; }
+
+/* número do pedido (#0089) em mono ciano */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .bg-black\/40 .flex.justify-between.items-start > div > p:first-child {
+    font-family:var(--tk-mono); font-size:13px; font-weight:700; letter-spacing:.04em; color:var(--tk-cyan) !important;
+}
+/* total + botão de imprimir */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .czk-caixa-valor-pedido {
+    background:transparent !important; border-color:transparent !important; padding:0 !important; gap:10px !important;
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .czk-caixa-valor-pedido span {
+    color:var(--tk-blue) !important; font-family:var(--tk-mono); font-weight:700 !important; font-size:18px !important;
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .czk-caixa-valor-pedido button {
+    background:var(--tk-surface) !important; border:1px solid var(--tk-line2) !important; color:var(--tk-accent) !important;
+    width:38px; height:38px; border-radius:10px !important; justify-content:center;
+}
+/* botão ⋮ */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos div[onclick^="abrirMenuOpcoes"] {
+    background:var(--tk-surface) !important; border:1px solid var(--tk-line) !important; border-radius:9px !important;
+}
+/* ações (depois das cores de texto, para ganhar da regra .text-white) */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .bg-yellow-400 {
+    background:#fbbf24 !important; color:#1a1203 !important; border-radius:12px; font-weight:700;
+    box-shadow:0 0 22px rgba(251,191,36,.28);
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .bg-green-600,
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .bg-emerald-700 {
+    background:#34d399 !important; color:#04251a !important; border-radius:12px; font-weight:700;
+    box-shadow:0 0 22px rgba(52,211,153,.30);
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos .bg-white.border-blue-300 {
+    background:transparent !important; border:1px solid var(--tk-line2) !important; color:var(--tk-fg) !important; border-radius:12px;
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos select {
+    background:var(--tk-input) !important; border:1px solid var(--tk-line2) !important; color:var(--tk-fg) !important; border-radius:12px;
+}
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos select option { background:var(--tk-surface); color:var(--tk-fg); }
+
+/* rolagem fina nas listas de pedidos (as listas continuam rolando; só a barra da bandeja some) */
+#admin-panel:has(#pedidos-ativos.active) #pedidos-ativos [id^="lista-pedidos-"] {
+    scrollbar-width:thin; scrollbar-color:var(--tk-line2) transparent;
+}
+
+
+/* =====================================================================================
+   Botão sol/lua (troca dia/noite) e botão "Sair" do cabeçalho do admin
+   - sol aparece no modo noite (clicar vai pro dia); lua aparece no modo dia
+   - "Sair" fica no canto superior direito da tela (chama fecharAdmin(), igual ao antigo X)
+   ===================================================================================== */
+.czk-btn-tema-painel {
+    width: 40px; height: 40px; display: inline-grid; place-items: center; padding: 0; cursor: pointer;
+    border-radius: 12px; border: 1px solid rgba(16,26,44,.18); background: transparent; color: #16233d;
+    font-size: 17px; transition: background-color .2s, border-color .2s;
+}
+.czk-btn-tema-painel:hover { background: rgba(16,26,44,.06); }
+.czk-btn-tema-painel .icone-tema-sol { display: none; }
+body.modo-painel-noite .czk-btn-tema-painel { color: #e5e7eb; border-color: rgba(255,255,255,.2); }
+body.modo-painel-noite .czk-btn-tema-painel:hover { background: rgba(255,255,255,.07); }
+body.modo-painel-noite .czk-btn-tema-painel .icone-tema-sol { display: inline; }
+body.modo-painel-noite .czk-btn-tema-painel .icone-tema-lua { display: none; }
+.czk-btn-tema-painel:focus-visible, .czk-btn-sair-admin:focus-visible { outline: 2px solid #22d3ee; outline-offset: 2px; }
+
+.czk-btn-sair-admin {
+    position: absolute; top: 14px; right: 20px; z-index: 10;
+    height: 34px; padding: 0 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid rgba(16,26,44,.25); background: transparent; color: #16233d;
+    font-size: 14px; font-weight: 600; transition: background-color .2s, border-color .2s;
+}
+.czk-btn-sair-admin:hover { background: rgba(16,26,44,.06); }
+body.modo-painel-noite .czk-btn-sair-admin { color: #e5e7eb; border-color: rgba(255,255,255,.25); }
+body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,.07); }
+#admin-panel.czk-pedidos-tela-cheia .czk-btn-sair-admin { display: none; }
+/* reserva espaço pro "Sair" quando a tela é estreita */
+@media (max-width: 1340px) { #admin-panel-header { padding-right: 84px; } }
+
+/* visual tech (aba Pedidos ativa) */
+#admin-panel:has(#pedidos-ativos.active) .czk-btn-tema-painel {
+    background: var(--tk-surface); border-color: var(--tk-line); color: var(--tk-fg);
+}
+#admin-panel:has(#pedidos-ativos.active) .czk-btn-tema-painel:hover { border-color: var(--tk-line2); box-shadow: 0 0 16px var(--tk-glow); }
+#admin-panel:has(#pedidos-ativos.active) .czk-btn-sair-admin {
+    background: var(--tk-surface); border-color: var(--tk-line2); color: var(--tk-fg);
+    font-family: var(--tk-head); box-shadow: 0 0 18px var(--tk-glow);
+}
+#admin-panel:has(#pedidos-ativos.active) .czk-btn-sair-admin:hover { border-color: var(--tk-accent); }
