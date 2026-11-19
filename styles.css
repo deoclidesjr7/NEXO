@@ -1276,24 +1276,24 @@
 
    - Só vale enquanto a aba Pedidos está ativa (#pedidos-ativos.active); nas outras abas
      do admin tudo continua como antes.
-   - Tema escuro nos modos dia e noite (a aba Pedidos sempre usa o visual tech escuro).
+   - Modo noite (body.modo-painel-noite) = tema escuro. Modo dia = versão clara do mesmo layout.
    - Cores/tokens em variáveis --tk-*; a barra de sub-abas reaproveita as variáveis --nx-*
      do bloco "GRADIENT BUTTON GROUP" acima.
    - Seletores usam :has() + ids para vencer os !important antigos (text-white forçado etc.).
    ===================================================================================== */
 
 #admin-panel:has(#pedidos-ativos.active) {
-    --tk-bg:#060a13; --tk-surface:#0a1120; --tk-surface2:#0f1a2e;
-    --tk-line:rgba(120,165,255,.16); --tk-line2:rgba(120,165,255,.32);
-    --tk-fg:#e8eefb; --tk-dim:#93a3bf; --tk-accent:#22d3ee;
-    --tk-glow:rgba(34,211,238,.20); --tk-grid:rgba(110,150,255,.055);
-    --tk-cyan:#22d3ee; --tk-blue:#60a5fa; --tk-warn:#fbbf24; --tk-ok:#34d399;
-    --tk-bad:#fb7185; --tk-pink:#f472b6; --tk-orange:#fb923c;
-    --tk-tray:linear-gradient(180deg,#0b101d,#070b15);
-    --tk-tray-shadow:inset 0 2px 8px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.04);
-    --tk-nav:linear-gradient(180deg,#1a2236,#131a2b 55%,#0f1524);
-    --tk-nav-top:rgba(255,255,255,.10); --tk-nav-shadow:0 10px 30px rgba(0,0,0,.28);
-    --tk-well:#060910; --tk-gap:#0a0e18; --tk-input:#070d19; --tk-hover:rgba(255,255,255,.07);
+    --tk-bg:#e9eff9; --tk-surface:#ffffff; --tk-surface2:#f4f7fc;
+    --tk-line:rgba(30,60,120,.15); --tk-line2:rgba(30,60,120,.30);
+    --tk-fg:#0d1730; --tk-dim:#55637d; --tk-accent:#0891b2;
+    --tk-glow:rgba(8,145,178,.16); --tk-grid:rgba(30,60,120,.06);
+    --tk-cyan:#0e7490; --tk-blue:#1d4ed8; --tk-warn:#92400e; --tk-ok:#047857;
+    --tk-bad:#be123c; --tk-pink:#be185d; --tk-orange:#c2410c;
+    --tk-tray:linear-gradient(180deg,#d3dae8,#c9d1e2);
+    --tk-tray-shadow:inset 0 2px 6px rgba(0,0,0,.10), 0 1px 0 rgba(255,255,255,.6);
+    --tk-nav:linear-gradient(180deg,#ffffff,#fbfcff 55%,#f6f8fd);
+    --tk-nav-top:#ffffff; --tk-nav-shadow:0 10px 26px -12px rgba(13,23,48,.30);
+    --tk-well:#dfe5f1; --tk-gap:#eef2f9; --tk-input:#f4f7fc; --tk-hover:rgba(13,23,48,.06);
     --tk-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     --tk-head:'Space Grotesk',Inter,system-ui,sans-serif;
     background-color:var(--tk-bg) !important;
