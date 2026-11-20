@@ -1741,7 +1741,7 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
    ABA CANCELAMENTOS: lista de pedidos à esquerda + chat da conversa à direita.
    O #modal-chat-suporte é acoplado ao #cancel-chat-slot pelo app.js (mesmo visual do Suporte).
    ===================================================================================== */
-#subtab-cancelamentos-conteudo { --sup-h:calc(100vh - 336px); }
+#subtab-cancelamentos-conteudo { --sup-h:calc(100vh - 262px); }
 #admin-panel.czk-pedidos-tela-cheia #subtab-cancelamentos-conteudo { --sup-h:calc(100vh - 196px); }
 
 #cancel-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:14px; align-items:start; }
@@ -1756,4 +1756,20 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
     #cancel-layout { grid-template-columns:1fr; }
     #cancel-lista { height:auto; min-height:0; overflow:visible; }
     #cancel-chat-slot { display:none; }
+}
+
+
+/* =====================================================================================
+   ABAS RETIRADA E FINALIZADOS: pedidos em 2 colunas (um do lado do outro), como em Cancelamentos.
+   ===================================================================================== */
+#lista-pedidos-retirada,
+#lista-pedidos-finalizados {
+    display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; align-items:start;
+}
+#lista-pedidos-retirada > *,
+#lista-pedidos-finalizados > * { margin-top:0 !important; }
+#lista-pedidos-retirada > :only-child,
+#lista-pedidos-finalizados > :only-child { grid-column:1 / -1; }
+@media (max-width: 760px) {
+    #lista-pedidos-retirada, #lista-pedidos-finalizados { grid-template-columns:1fr; }
 }
