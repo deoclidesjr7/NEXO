@@ -1617,12 +1617,12 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 .czk-btn-sair-admin { position:fixed; }
 
 #admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos [id^="subtab-"][id$="-conteudo"] {
-    border-bottom:0; border-radius:24px 24px 0 0; margin-bottom:-20px; padding-bottom:44px;
+    border-bottom:0; border-radius:24px 24px 0 0; margin-bottom:-20px; padding-bottom:0;
     min-height:calc(100vh - 150px);
 }
 #admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos #lista-pedidos-novos,
 #admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos #lista-pedidos-ativos {
-    max-height:calc(100vh - 316px);
+    max-height:calc(100vh - 276px);
 }
 
 
