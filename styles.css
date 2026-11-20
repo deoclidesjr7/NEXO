@@ -1606,3 +1606,21 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 #admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos #lista-pedidos-ativos {
     max-height:calc(100vh - 310px);
 }
+
+
+/* =====================================================================================
+   AJUSTES: logo NEXO e botão Sair flutuando (fixos, acompanham a tela) e cartão "sem fim"
+   (sem borda/espaço embaixo; as listas crescem e a tela rola). A tela cheia já era sem borda
+   embaixo, então não foi alterada.
+   ===================================================================================== */
+#admin-panel .admin-panel-logo-badge { position:fixed !important; }
+.czk-btn-sair-admin { position:fixed; }
+
+#admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos [id^="subtab-"][id$="-conteudo"] {
+    border-bottom:0; border-radius:24px 24px 0 0; margin-bottom:-20px; padding-bottom:44px;
+    min-height:calc(100vh - 150px);
+}
+#admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos #lista-pedidos-novos,
+#admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos #lista-pedidos-ativos {
+    max-height:none;
+}
