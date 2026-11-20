@@ -1641,3 +1641,97 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 @media (max-width: 760px) {
     #lista-cancelamentos-pendentes, #lista-pedidos-cancelados { grid-template-columns:1fr; }
 }
+
+
+/* =====================================================================================
+   ABA CONVERSAS DE SUPORTE: lista de conversas à esquerda + bate-papo da conversa à direita.
+   O #modal-chat-suporte é acoplado ao #suporte-chat-slot pelo app.js (classe .suporte-docado).
+   ===================================================================================== */
+#subtab-suporte-conteudo { --sup-h:calc(100vh - 330px); }
+#admin-panel.czk-pedidos-tela-cheia #subtab-suporte-conteudo { --sup-h:calc(100vh - 190px); }
+
+#suporte-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:14px; align-items:start; }
+#lista-suporte-geral-admin { height:var(--sup-h); min-height:320px; margin-top:0 !important; scrollbar-width:none; }
+#lista-suporte-geral-admin::-webkit-scrollbar { display:none; width:0; }
+#suporte-chat-slot { position:relative; height:var(--sup-h); min-height:320px; }
+.suporte-chat-vazio {
+    height:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+    border:1px dashed var(--tk-line2); border-radius:14px; color:var(--tk-dim); font-size:13px;
+}
+#suporte-chat-slot:has(#modal-chat-suporte[style*="flex"]) .suporte-chat-vazio { display:none; }
+
+/* busca + filtros */
+#admin-panel:has(#pedidos-ativos.active) #busca-suporte-geral {
+    background:var(--tk-input) !important; border:1px solid var(--tk-line2) !important; color:var(--tk-fg) !important;
+    border-radius:10px; padding-top:7px; padding-bottom:7px; font-size:12px;
+}
+#admin-panel:has(#pedidos-ativos.active) #busca-suporte-geral::placeholder { color:var(--tk-dim) !important; }
+#admin-panel:has(#pedidos-ativos.active) #busca-suporte-geral:focus { border-color:var(--tk-accent) !important; box-shadow:0 0 0 2px var(--tk-glow); }
+#admin-panel:has(#pedidos-ativos.active) .filtro-leitura-btn {
+    border:1px solid var(--tk-line2); background:transparent; color:var(--tk-dim) !important;
+    font-size:12px; padding:6px 14px; border-radius:999px;
+}
+#admin-panel:has(#pedidos-ativos.active) .filtro-leitura-btn i { color:inherit !important; }
+#admin-panel:has(#pedidos-ativos.active) .filtro-leitura-btn.bg-blue-900\/40 {
+    background:rgba(59,130,246,.16) !important; border-color:var(--tk-blue); color:var(--tk-blue) !important;
+}
+
+/* cards da lista */
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin > .bg-black\/40 { padding:10px 12px !important; border-radius:12px; }
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin > .border-blue-800\/50 { border-color:var(--tk-line) !important; }
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin > .border-blue-800\/50 p.text-blue-400,
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin > .border-blue-800\/50 p.text-yellow-400 { color:var(--tk-dim) !important; }
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin > .border-blue-500 {
+    border-color:var(--tk-blue) !important; background:rgba(59,130,246,.12) !important;
+}
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin p.text-sm { font-size:12px; }
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin p.text-xs { font-size:11px; }
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin .bg-blue-500 {
+    background:#2563eb !important; color:#fff !important; font-family:var(--tk-mono);
+}
+#admin-panel:has(#pedidos-ativos.active) #lista-suporte-geral-admin > .suporte-item-ativo { box-shadow:0 0 0 2px var(--tk-blue); }
+
+/* chat acoplado */
+#admin-panel:has(#pedidos-ativos.active) #modal-chat-suporte.suporte-docado {
+    position:static !important; inset:auto !important; z-index:auto !important; padding:0 !important;
+    background:transparent !important; backdrop-filter:none !important; height:100%; align-items:stretch; justify-content:stretch;
+}
+#modal-chat-suporte.suporte-docado > .glass-card {
+    height:100% !important; max-width:none !important; border-radius:14px !important; box-shadow:none !important;
+    background:var(--tk-surface) !important; border:1px solid var(--tk-line2) !important;
+}
+#modal-chat-suporte.suporte-docado > .glass-card > div:first-child {
+    padding:8px 12px !important; background:transparent !important; border-bottom:1px solid var(--tk-line) !important;
+}
+#modal-chat-suporte.suporte-docado > .glass-card > div:first-child h2 { font-size:12px; font-weight:600; font-family:var(--tk-head); color:var(--tk-fg) !important; }
+#modal-chat-suporte.suporte-docado > .glass-card > div:first-child h2 i,
+#modal-chat-suporte.suporte-docado button[onclick="fecharChatSuporte()"] { display:none !important; }
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens { background:var(--tk-surface2) !important; padding:12px; }
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens .bg-black\/40 {
+    background:var(--tk-surface) !important; border:1px solid var(--tk-line); color:var(--tk-fg) !important; border-radius:12px;
+}
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens .bg-black\/40 p { color:var(--tk-fg) !important; }
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens .bg-blue-700 { background:#2563eb !important; border-radius:12px; }
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens .bg-blue-700,
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens .bg-blue-700 p { color:#fff !important; }
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens p[class*="text-white/50"] { color:var(--tk-dim) !important; }
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-mensagens .bg-blue-700 p[class*="text-white/50"] { color:rgba(255,255,255,.75) !important; }
+#modal-chat-suporte.suporte-docado > .glass-card > div:last-child { padding:8px !important; border-top:1px solid var(--tk-line) !important; }
+#admin-panel #modal-chat-suporte.suporte-docado #chat-suporte-input {
+    background:var(--tk-input) !important; color:var(--tk-fg) !important; border:1px solid var(--tk-line2); border-radius:10px;
+    padding:6px 10px !important; font-size:12px !important;
+}
+#admin-panel #modal-chat-suporte.suporte-docado button[onclick^="document.getElementById"] {
+    background:var(--tk-surface2) !important; color:var(--tk-blue) !important; border:1px solid var(--tk-line); border-radius:10px; padding:0 10px !important;
+}
+#admin-panel #modal-chat-suporte.suporte-docado button[onclick="enviarMensagemSuporte()"] {
+    background:#2563eb !important; color:#fff !important; border-radius:10px; font-size:12px; font-weight:600; padding:0 16px !important;
+}
+#modal-chat-suporte.suporte-docado button[onclick="enviarMensagemSuporte()"] i { display:none; }
+#modal-chat-suporte.suporte-docado button[onclick="enviarMensagemSuporte()"]::after { content:"Enviar"; }
+
+@media (max-width: 900px) {
+    #suporte-layout { grid-template-columns:1fr; }
+    #lista-suporte-geral-admin { height:auto; max-height:280px; min-height:0; }
+    #suporte-chat-slot { height:460px; }
+}
