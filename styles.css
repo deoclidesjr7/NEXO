@@ -1768,8 +1768,8 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 }
 #lista-pedidos-retirada > *,
 #lista-pedidos-finalizados > * { margin-top:0 !important; }
-#lista-pedidos-retirada > :only-child,
-#lista-pedidos-finalizados > :only-child { grid-column:1 / -1; }
+#lista-pedidos-retirada > .text-center,
+#lista-pedidos-finalizados > .text-center { grid-column:1 / -1; }
 @media (max-width: 760px) {
     #lista-pedidos-retirada, #lista-pedidos-finalizados { grid-template-columns:1fr; }
 }
