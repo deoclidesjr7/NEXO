@@ -1735,3 +1735,25 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
     #lista-suporte-geral-admin { height:auto; max-height:280px; min-height:0; }
     #suporte-chat-slot { height:460px; }
 }
+
+
+/* =====================================================================================
+   ABA CANCELAMENTOS: lista de pedidos à esquerda + chat da conversa à direita.
+   O #modal-chat-suporte é acoplado ao #cancel-chat-slot pelo app.js (mesmo visual do Suporte).
+   ===================================================================================== */
+#subtab-cancelamentos-conteudo { --sup-h:calc(100vh - 336px); }
+#admin-panel.czk-pedidos-tela-cheia #subtab-cancelamentos-conteudo { --sup-h:calc(100vh - 196px); }
+
+#cancel-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:14px; align-items:start; }
+#cancel-lista { height:var(--sup-h); min-height:320px; overflow-y:auto; scrollbar-width:none; }
+#cancel-lista::-webkit-scrollbar { display:none; width:0; }
+#cancel-layout #lista-cancelamentos-pendentes,
+#cancel-layout #lista-pedidos-cancelados { grid-template-columns:minmax(0,1fr); overflow:visible; }
+#cancel-chat-slot { position:relative; height:var(--sup-h); min-height:320px; }
+#cancel-chat-slot:has(#modal-chat-suporte[style*="flex"]) .suporte-chat-vazio { display:none; }
+
+@media (max-width: 900px) {
+    #cancel-layout { grid-template-columns:1fr; }
+    #cancel-lista { height:auto; min-height:0; overflow:visible; }
+    #cancel-chat-slot { display:none; }
+}
