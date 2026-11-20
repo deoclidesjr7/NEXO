@@ -1568,3 +1568,27 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 }
 
 #admin-panel:has(#pedidos-ativos.active) #pedidos-subtabs-bar + hr { display:none; }
+
+
+/* =====================================================================================
+   NOVO LAYOUT DA ABA PEDIDOS (modo normal; a tela cheia não foi alterada)
+   - cabeçalho: sem ícone/título "Painel de Controle" (os botões ABERTO/PAUSA ocupam o lugar)
+   - a bandeja de sub-abas encosta na linha do cabeçalho e fica solta sobre o fundo (sem cartão em volta)
+   - o cartão (com borda arredondada) começa logo abaixo da bandeja e envolve o conteúdo da sub-aba
+   ===================================================================================== */
+#admin-panel:has(#pedidos-ativos.active) #admin-panel-header { margin-bottom:0 !important; }
+
+#admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos > .glass-card-solid {
+    background:transparent !important; border:0 !important; box-shadow:none !important;
+    padding:0 !important; border-radius:0 !important; backdrop-filter:none;
+}
+#admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-subtabs-bar {
+    padding:0 14px 12px 40px; margin-bottom:0;
+}
+#admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-subtabs-tray {
+    border-radius:0 0 var(--nx-rt) var(--nx-rt);
+}
+#admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos [id^="subtab-"][id$="-conteudo"] {
+    background:var(--tk-surface); border:1px solid var(--tk-line); border-radius:24px; padding:24px;
+    box-shadow:0 24px 60px rgba(0,0,0,.25), 0 0 0 1px var(--tk-grid);
+}
