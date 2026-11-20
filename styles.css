@@ -1610,7 +1610,7 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 
 /* =====================================================================================
    AJUSTES: logo NEXO e botão Sair flutuando (fixos, acompanham a tela) e cartão "sem fim"
-   (sem borda/espaço embaixo; as listas crescem e a tela rola). A tela cheia já era sem borda
+   (sem borda/espaço embaixo; cada coluna rola individualmente, dentro e fora da tela cheia). A tela cheia já era sem borda
    embaixo, então não foi alterada.
    ===================================================================================== */
 #admin-panel .admin-panel-logo-badge { position:fixed !important; }
@@ -1622,5 +1622,22 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 }
 #admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos #lista-pedidos-novos,
 #admin-panel:not(.czk-pedidos-tela-cheia):has(#pedidos-ativos.active) #pedidos-ativos #lista-pedidos-ativos {
-    max-height:none;
+    max-height:calc(100vh - 316px);
+}
+
+
+/* =====================================================================================
+   ABA CANCELAMENTOS: pedidos em 2 colunas (um do lado do outro).
+   "Solicitações pendentes" em cima e "Pedidos cancelados" embaixo, como no mockup.
+   ===================================================================================== */
+#lista-cancelamentos-pendentes,
+#lista-pedidos-cancelados {
+    display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; align-items:start;
+}
+#lista-cancelamentos-pendentes > *,
+#lista-pedidos-cancelados > * { margin-top:0 !important; }
+#lista-cancelamentos-pendentes > :only-child,
+#lista-pedidos-cancelados > :only-child { grid-column:1 / -1; }
+@media (max-width: 760px) {
+    #lista-cancelamentos-pendentes, #lista-pedidos-cancelados { grid-template-columns:1fr; }
 }
