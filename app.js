@@ -413,7 +413,7 @@
                     chatSuporte = value || {};
                     if(document.getElementById("modal-chat-suporte")?.style.display === "flex") {
                         renderChatSuporte();
-                        if(adminLogado) marcarSuporteComoLidoAdmin(chatSuportePedidoAtual);
+                        if(adminLogado && !czkChatSuporteAcopladoOculto()) marcarSuporteComoLidoAdmin(chatSuportePedidoAtual);
                     }
                     if(document.getElementById("modal-suporte-cliente")?.style.display === "flex") renderListaSuporteCliente();
                     if(adminLogado && document.getElementById("admin-panel")?.style.display === "block") {
@@ -4150,7 +4150,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 return;
             }
             container.innerHTML = itens.map(({chave, meta, nomeCliente, ultima, naoLidas}) => {
-                return `<div class="bg-black/40 p-4 rounded-xl border ${naoLidas > 0 ? 'border-blue-500' : 'border-blue-800/50'} cursor-pointer hover:border-blue-500" onclick="abrirChatSuporte('${chave}')">
+                return `<div class="bg-black/40 p-4 rounded-xl border ${naoLidas > 0 ? 'border-blue-500' : 'border-blue-800/50'} ${chave === chatSuportePedidoAtual ? 'suporte-item-ativo' : ''} cursor-pointer hover:border-blue-500" onclick="abrirChatSuporte('${chave}')">
                     <div class="flex justify-between items-start gap-2">
                         <p class="text-sm font-bold text-blue-400"><i class="fas fa-user"></i> ${nomeCliente}</p>
                         ${naoLidas > 0 ? `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${naoLidas}</span>` : `<span class="text-white/30 text-[10px]"><i class="fas fa-check-double"></i> lida</span>`}
@@ -4160,6 +4160,8 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 </div>`;
             }).join('');
             atualizarBolinhaSuporte();
+            // ao entrar na aba, já deixa a conversa mais recente aberta no bate-papo da direita
+            if(chatSuportePedidoAtual === null && czkSuporteTabVisivel()) abrirChatSuporte(itens[0].chave);
         }
 
         // Lista, na aba "Finalizados", todo pedido cuja entrega já foi concluída (status "Entrega
@@ -4355,22 +4357,51 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             renderListaSuporteCliente();
         }
 
+        // Na aba "Conversas de suporte" o chat fica acoplado à direita da lista (em vez de modal por cima).
+        let czkChatSuporteOrigem = null;
+        function czkAcoplarChatSuporte(acoplar) {
+            const modal = document.getElementById("modal-chat-suporte");
+            const slot = document.getElementById("suporte-chat-slot");
+            if(!modal || !slot) return;
+            if(!czkChatSuporteOrigem) czkChatSuporteOrigem = modal.parentNode;
+            if(acoplar) { if(modal.parentNode !== slot) slot.appendChild(modal); modal.classList.add("suporte-docado"); }
+            else { if(modal.parentNode === slot) czkChatSuporteOrigem.appendChild(modal); modal.classList.remove("suporte-docado"); }
+        }
+        function czkChatSuporteAcopladoOculto() {
+            const modal = document.getElementById("modal-chat-suporte");
+            return !!(modal && modal.classList.contains("suporte-docado") && modal.getClientRects().length === 0);
+        }
+        function czkSuporteTabVisivel() {
+            const c = document.getElementById("subtab-suporte-conteudo");
+            return !!(adminLogado && c && c.style.display === "block" && document.getElementById("admin-panel")?.style.display === "block" && c.getClientRects().length > 0);
+        }
+
         function abrirChatSuporte(pedidoId) {
             chatSuportePedidoAtual = pedidoId;
             const ehGeral = typeof pedidoId === 'string' && pedidoId.indexOf('geral_') === 0;
+            const acoplar = ehGeral && czkSuporteTabVisivel();
+            czkAcoplarChatSuporte(acoplar);
             const pedido = ehGeral ? null : historicoPedidos.find(p => p.id == pedidoId);
             const ehSobreCancelamento = !!(pedido && (pedido.cancelamentoPendente || pedido.status === 'Cancelado'));
-            document.getElementById("chat-suporte-titulo").textContent = pedido ? `Suporte · ${formatarNumeroPedido(pedido)}` : (ehGeral && chatSuporteMeta[pedidoId] ? `Suporte · ${chatSuporteMeta[pedidoId].motivo}` : 'Suporte');
+            let tituloChat = pedido ? `Suporte · ${formatarNumeroPedido(pedido)}` : (ehGeral && chatSuporteMeta[pedidoId] ? `Suporte · ${chatSuporteMeta[pedidoId].motivo}` : 'Suporte');
+            if(acoplar && chatSuporteMeta[pedidoId]) {
+                const metaAc = chatSuporteMeta[pedidoId];
+                const cliAc = clientesCadastrados.find(c => c.whats === metaAc.clienteWhats);
+                tituloChat += ` · ${(cliAc && cliAc.nome) || metaAc.clienteNome || 'Cliente'}`;
+            }
+            document.getElementById("chat-suporte-titulo").textContent = tituloChat;
             const inputMsg = document.getElementById("chat-suporte-input");
             if(inputMsg) inputMsg.placeholder = ehSobreCancelamento ? "Digite o motivo do cancelamento do pedido..." : "Digite uma mensagem...";
             renderChatSuporte();
             document.getElementById("modal-chat-suporte").style.display = "flex";
             if(adminLogado) marcarSuporteComoLidoAdmin(pedidoId);
             atualizarBolinhaSuporte();
+            if(acoplar) renderSuporteGeralAdmin();
         }
 
         function fecharChatSuporte() {
             document.getElementById("modal-chat-suporte").style.display = "none";
+            czkAcoplarChatSuporte(false);
             chatSuportePedidoAtual = null;
             atualizarBolinhaSuporte();
         }
@@ -4546,7 +4577,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             const painelAberto = document.getElementById("admin-panel")?.style.display === "block";
             if(!adminLogado || !painelAberto) { bubble.classList.add("hidden"); return; }
             // some enquanto o próprio chat de suporte já está aberto, pra não ficar redundante
-            if(document.getElementById("modal-chat-suporte")?.style.display === "flex") { bubble.classList.add("hidden"); return; }
+            if(document.getElementById("modal-chat-suporte")?.style.display === "flex" && !czkChatSuporteAcopladoOculto()) { bubble.classList.add("hidden"); return; }
             const total = contarMensagensSuporteNaoLidas();
             // se chegou mensagem nova, cancela um "fechei manualmente" anterior
             if(total > bolinhaSuporteUltimoTotal) bolinhaSuporteFechadaManualmente = false;
@@ -10243,6 +10274,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     btn.classList.remove(...classesAtivas);
                 }
             });
+            if(tab !== 'suporte' && document.getElementById("modal-chat-suporte")?.classList.contains("suporte-docado")) fecharChatSuporte();
             if(abas[tab]) abas[tab].render();
         }
 
