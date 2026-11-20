@@ -4434,14 +4434,76 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             container.scrollTop = container.scrollHeight;
         }
 
-        // Lê a foto escolhida (câmera ou galeria, dependendo do que o usuário escolher no seletor
-        // do próprio aparelho) como base64 e entrega pro callback de envio de cada chat.
+        // Envia uma foto (dataURL já comprimida) pro Supabase Storage e devolve a URL pública.
+        // Se o envio falhar por qualquer motivo, devolve a própria dataURL (o chat continua funcionando como antes).
+        async function czkFotoChatParaStorage(dataUrl) {
+            try {
+                const blob = await (await fetch(dataUrl)).blob();
+                const arquivo = new File([blob], `foto-${Math.random().toString(36).slice(2, 8)}.jpg`, { type: 'image/jpeg' });
+                return await czkUploadArquivoStorage(arquivo, "chat-fotos");
+            } catch(e) {
+                console.warn('[chat] upload da foto falhou, salvando inline', e);
+                return dataUrl;
+            }
+        }
+
+        // Lê a foto escolhida (câmera ou galeria), comprime (máx. 1280px, JPEG 82%), envia pro Storage e entrega
+        // a URL pro callback de envio de cada chat. O registro do chat guarda só o link, não a foto inteira.
+        // Se a compressão ou o upload falharem, cai pro comportamento antigo (foto em base64).
         function czkAnexarFotoChat(inputEl, callbackEnvio) {
             const file = inputEl.files && inputEl.files[0];
             if(!file) return;
-            const reader = new FileReader();
-            reader.onload = e => { callbackEnvio(e.target.result); inputEl.value = ""; };
-            reader.readAsDataURL(file);
+            const enviarOriginal = () => {
+                const reader = new FileReader();
+                reader.onload = e => { callbackEnvio(e.target.result); inputEl.value = ""; };
+                reader.readAsDataURL(file);
+            };
+            czkComprimirImagem(file, 1280, 1280, 0.82)
+                .then(dataUrl => czkFotoChatParaStorage(dataUrl))
+                .then(valor => { callbackEnvio(valor); inputEl.value = ""; })
+                .catch(enviarOriginal);
+        }
+
+        // LIMPEZA ÚNICA: recomprime as fotos que já estão salvas nos chats (suporte e entregadores) e move pro Storage
+        // (fica só o link no registro). Só mexe em foto acima de ~200 KB; nenhuma mensagem ou foto é apagada.
+        // Uso: abrir o painel admin, apertar F12 e rodar no Console:  czkLimparFotosAntigas()
+        async function czkLimparFotosAntigas() {
+            const MB = n => (n / 1048576).toFixed(2) + ' MB';
+            const recomprimir = dataUrl => new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const esc = Math.min(1, 1280 / Math.max(img.width, img.height));
+                        const c = document.createElement('canvas');
+                        c.width = Math.round(img.width * esc); c.height = Math.round(img.height * esc);
+                        const ctx = c.getContext('2d');
+                        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+                        ctx.drawImage(img, 0, 0, c.width, c.height);
+                        const out = c.toDataURL('image/jpeg', 0.82);
+                        resolve(out.length < dataUrl.length ? out : dataUrl);
+                    } catch(e) { resolve(dataUrl); }
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+            });
+            const alvos = [['czk_chat_suporte', chatSuporte], ['czk_chat_entregadores', chatEntregadores]];
+            const antes = alvos.map(([, o]) => JSON.stringify(o || {}).length);
+            if(!confirm('Recomprimir as fotos antigas dos chats?\nTamanho atual: suporte ' + MB(antes[0]) + ' · entregadores ' + MB(antes[1]) + '\nNenhuma mensagem será apagada.')) return;
+            let total = 0;
+            for(const [chave, dados] of alvos) {
+                let mudou = false;
+                for(const conv in (dados || {})) {
+                    for(const m of (dados[conv] || [])) {
+                        if(m && typeof m.imagem === 'string' && m.imagem.indexOf('data:image') === 0 && m.imagem.length > 270000) {
+                            m.imagem = await czkFotoChatParaStorage(await recomprimir(m.imagem)); mudou = true; total++;
+                        }
+                    }
+                }
+                if(mudou) { try { await czkSave(chave, dados); } catch(e) { console.warn('Falha ao salvar', chave, e); alert('Não consegui salvar "' + chave + '": ' + (e && e.message)); } }
+            }
+            const depois = alvos.map(([, o]) => JSON.stringify(o || {}).length);
+            alert(total + ' foto(s) recomprimida(s).\nSuporte: ' + MB(antes[0]) + ' → ' + MB(depois[0]) + '\nEntregadores: ' + MB(antes[1]) + ' → ' + MB(depois[1]));
+            if(typeof renderSuporteGeralAdmin === 'function') renderSuporteGeralAdmin();
         }
 
         // Abre a foto enviada no chat em tamanho grande (lightbox simples).
