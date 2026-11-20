@@ -1773,3 +1773,18 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 @media (max-width: 760px) {
     #lista-pedidos-retirada, #lista-pedidos-finalizados { grid-template-columns:1fr; }
 }
+
+
+/* =====================================================================================
+   ABA BALCÃO: mesas em 3 colunas (2 em janela média, 1 em janela estreita).
+   ===================================================================================== */
+#lista-pedidos-balcao {
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; align-items:start;
+}
+#lista-pedidos-balcao > * { margin-top:0 !important; min-width:0; }
+#lista-pedidos-balcao > .text-center { grid-column:1 / -1; }
+#lista-pedidos-balcao .flex.justify-between.items-center { flex-wrap:wrap; gap:8px; }
+#lista-pedidos-balcao .flex.justify-between.items-center > div { flex-wrap:wrap; }
+@media (max-width: 1100px) { #lista-pedidos-balcao { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+@media (max-width: 760px)  { #lista-pedidos-balcao { grid-template-columns:1fr; } }
+
