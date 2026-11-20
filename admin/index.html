@@ -495,15 +495,17 @@
 
                 <div id="subtab-suporte-conteudo" style="display:none;">
                     <h3 class="text-xl font-semibold text-blue-400 mb-2"><i class="fas fa-comment-dots"></i> Conversas de suporte (clientes)</h3>
-                    <p class="text-white/50 text-xs mb-4">Mensagens que os clientes enviaram pelo botão "Falar com o suporte", sem estar ligadas a um pedido específico.</p>
-                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
                         <div class="relative w-full sm:w-80"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input type="text" id="busca-suporte-geral" oninput="renderSuporteGeralAdmin()" placeholder="Buscar por nome do cliente ou motivo" class="w-full rounded-xl pl-9 pr-3 py-2.5 bg-[#16243c] border border-blue-800 text-white text-sm placeholder-slate-500"></div>
                         <div class="flex gap-2">
                             <button id="filtro-suporte-nao-lidas" onclick="filtrarSuporteLeitura('nao_lidas')" class="filtro-leitura-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-arrow-up"></i> Não lidas</button>
                             <button id="filtro-suporte-lidas" onclick="filtrarSuporteLeitura('lidas')" class="filtro-leitura-btn px-4 py-1.5 rounded-full text-white/70 hover:text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-arrow-down"></i> Lidas</button>
                         </div>
                     </div>
-                    <div id="lista-suporte-geral-admin" class="space-y-3 overflow-y-auto"></div>
+                    <div id="suporte-layout">
+                        <div id="lista-suporte-geral-admin" class="space-y-3 overflow-y-auto"></div>
+                        <div id="suporte-chat-slot"><div class="suporte-chat-vazio"><i class="fas fa-comments"></i> Selecione uma conversa</div></div>
+                    </div>
                 </div>
 
                 <div id="subtab-balcao-conteudo" style="display:none;">
