@@ -482,7 +482,9 @@
 
                 <div id="subtab-cancelamentos-conteudo" style="display:none;">
                     <div class="flex justify-between items-center mb-5 flex-wrap gap-3"><h3 class="text-xl font-semibold text-red-400"><i class="fas fa-ban"></i> Cancelamentos</h3><div class="relative w-full sm:w-80"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input type="text" id="busca-cancelamentos" oninput="renderCancelamentosAdmin()" placeholder="Buscar por nome, telefone, rua, nº do pedido ou comida" class="w-full rounded-xl pl-9 pr-3 py-2.5 bg-[#16243c] border border-blue-800 text-white text-sm placeholder-slate-500"></div></div>
-                    <div class="mb-6">
+                    <div id="cancel-layout">
+<div id="cancel-lista">
+<div class="mb-6">
                         <h4 class="text-sm font-bold text-yellow-400 mb-2 flex items-center gap-2"><i class="fas fa-hourglass-half"></i> Solicitações pendentes</h4>
                         <p class="text-white/50 text-xs mb-3">Quando um cliente pede para cancelar, ele aguarda 5 minutos por uma resposta sua. Use o chat para entender o motivo. Se não houver acordo, o cancelamento é confirmado automaticamente. Ao entrar no chat, a contagem é pausada até você resolver.</p>
                         <div id="lista-cancelamentos-pendentes" class="space-y-3"></div>
@@ -491,6 +493,9 @@
                         <h4 class="text-sm font-bold text-red-400 mb-2 flex items-center gap-2"><i class="fas fa-ban"></i> Pedidos cancelados</h4>
                         <div id="lista-pedidos-cancelados" class="space-y-3 overflow-y-auto"></div>
                     </div>
+</div>
+<div id="cancel-chat-slot"><div class="suporte-chat-vazio"><i class="fas fa-comments"></i> Selecione uma conversa</div></div>
+</div>
                 </div>
 
                 <div id="subtab-suporte-conteudo" style="display:none;">
