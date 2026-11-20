@@ -4438,13 +4438,13 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
 
         // Na aba "Conversas de suporte" o chat fica acoplado à direita da lista (em vez de modal por cima).
         let czkChatSuporteOrigem = null;
-        function czkAcoplarChatSuporte(acoplar) {
+        function czkAcoplarChatSuporte(acoplar, slotId) {
             const modal = document.getElementById("modal-chat-suporte");
-            const slot = document.getElementById("suporte-chat-slot");
-            if(!modal || !slot) return;
+            const slot = document.getElementById(slotId || "suporte-chat-slot");
+            if(!modal) return;
             if(!czkChatSuporteOrigem) czkChatSuporteOrigem = modal.parentNode;
-            if(acoplar) { if(modal.parentNode !== slot) slot.appendChild(modal); modal.classList.add("suporte-docado"); }
-            else { if(modal.parentNode === slot) czkChatSuporteOrigem.appendChild(modal); modal.classList.remove("suporte-docado"); }
+            if(acoplar) { if(!slot) return; if(modal.parentNode !== slot) slot.appendChild(modal); modal.classList.add("suporte-docado"); }
+            else { if(czkChatSuporteOrigem && modal.parentNode !== czkChatSuporteOrigem) czkChatSuporteOrigem.appendChild(modal); modal.classList.remove("suporte-docado"); }
         }
         function czkChatSuporteAcopladoOculto() {
             const modal = document.getElementById("modal-chat-suporte");
@@ -4455,13 +4455,19 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             return !!(adminLogado && c && c.style.display === "block" && document.getElementById("admin-panel")?.style.display === "block" && c.getClientRects().length > 0);
         }
 
+        function czkCancelTabVisivel() {
+            const c = document.getElementById("subtab-cancelamentos-conteudo");
+            return !!(adminLogado && c && c.style.display === "block" && document.getElementById("admin-panel")?.style.display === "block" && c.getClientRects().length > 0);
+        }
+
         function abrirChatSuporte(pedidoId) {
             chatSuportePedidoAtual = pedidoId;
             const ehGeral = typeof pedidoId === 'string' && pedidoId.indexOf('geral_') === 0;
-            const acoplar = ehGeral && czkSuporteTabVisivel();
-            czkAcoplarChatSuporte(acoplar);
             const pedido = ehGeral ? null : historicoPedidos.find(p => p.id == pedidoId);
             const ehSobreCancelamento = !!(pedido && (pedido.cancelamentoPendente || pedido.status === 'Cancelado'));
+            const acoplarCancel = ehSobreCancelamento && window.innerWidth > 900 && czkCancelTabVisivel();
+            const acoplar = (ehGeral && czkSuporteTabVisivel()) || acoplarCancel;
+            czkAcoplarChatSuporte(acoplar, acoplarCancel ? "cancel-chat-slot" : "suporte-chat-slot");
             let tituloChat = pedido ? `Suporte · ${formatarNumeroPedido(pedido)}` : (ehGeral && chatSuporteMeta[pedidoId] ? `Suporte · ${chatSuporteMeta[pedidoId].motivo}` : 'Suporte');
             if(acoplar && chatSuporteMeta[pedidoId]) {
                 const metaAc = chatSuporteMeta[pedidoId];
@@ -10381,7 +10387,11 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     btn.classList.remove(...classesAtivas);
                 }
             });
-            if(tab !== 'suporte' && document.getElementById("modal-chat-suporte")?.classList.contains("suporte-docado")) fecharChatSuporte();
+            const modalDoc = document.getElementById("modal-chat-suporte");
+            if(modalDoc && modalDoc.classList.contains("suporte-docado")) {
+                const abaDona = (modalDoc.parentNode && modalDoc.parentNode.id === "cancel-chat-slot") ? 'cancelamentos' : 'suporte';
+                if(tab !== abaDona) fecharChatSuporte();
+            }
             if(abas[tab]) abas[tab].render();
         }
 
