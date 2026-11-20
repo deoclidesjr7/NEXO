@@ -222,7 +222,86 @@
 
         // Salva local (cache offline) + remoto no Supabase, sem travar a interface.
         // Uso: czkSave("czk_produtos", produtos)  -- igual ao antigo localStorage.setItem, só sem o JSON.stringify manual.
+        // =========================================================================
+        //  TRAVA ANTI-PERDA DOS CHATS: os chats ficam num registro único (um por chave). Antes, cada aparelho
+        //  gravava a SUA cópia inteira por cima, e quem abrisse com a cópia vazia/desatualizada apagava
+        //  as conversas dos outros. Agora, antes de gravar, o app lê o que já está no banco e MESCLA
+        //  (nada some; mensagem lida continua lida). Se não conseguir ler o banco, NÃO grava por cima.
+        // =========================================================================
+        const CZK_CHAVES_MESCLAR = ['czk_chat_suporte', 'czk_chat_suporte_meta', 'czk_chat_entregadores'];
+        const czkFilaSaveChat = {};
+        function czkImpressaoMsg(m) {
+            if(!m || typeof m !== 'object') return JSON.stringify(m);
+            const img = typeof m.imagem === 'string' ? (m.imagem.length + ':' + m.imagem.slice(-48)) : '';
+            return [m.de || '', m.texto || '', img, m.hora || ''].join('|');
+        }
+        function czkMesclarListaMsgs(remota, local) {
+            const r = Array.isArray(remota) ? remota : [];
+            const l = Array.isArray(local) ? local : [];
+            const resultado = r.map(m => (m && typeof m === 'object') ? { ...m } : m);
+            const porImpressao = {};
+            resultado.forEach(m => { const fp = czkImpressaoMsg(m); (porImpressao[fp] = porImpressao[fp] || []).push(m); });
+            const vistos = {};
+            l.forEach(m => {
+                const fp = czkImpressaoMsg(m);
+                vistos[fp] = (vistos[fp] || 0) + 1;
+                const existente = (porImpressao[fp] || [])[vistos[fp] - 1];
+                if(existente) {
+                    if(m && typeof m === 'object' && typeof existente === 'object') {
+                        ['lidoAdmin', 'lidoEntregador'].forEach(f => { if(m[f] || existente[f]) existente[f] = true; });
+                    }
+                } else {
+                    const novo = (m && typeof m === 'object') ? { ...m } : m;
+                    resultado.push(novo);
+                    (porImpressao[fp] = porImpressao[fp] || []).push(novo);
+                }
+            });
+            return resultado;
+        }
+        function czkMesclarChat(key, remoto, local) {
+            const r = (remoto && typeof remoto === 'object') ? remoto : {};
+            const l = (local && typeof local === 'object') ? local : {};
+            const out = {};
+            new Set([...Object.keys(r), ...Object.keys(l)]).forEach(k => {
+                out[k] = (key === 'czk_chat_suporte_meta') ? { ...(r[k] || {}), ...(l[k] || {}) } : czkMesclarListaMsgs(r[k], l[k]);
+            });
+            return out;
+        }
         function czkSave(key, value) {
+            if(CZK_CHAVES_MESCLAR.includes(key) && value && typeof value === 'object') return czkSaveMesclando(key, value);
+            return czkSaveBruto(key, value);
+        }
+        function czkSaveMesclando(key, value) {
+            const anterior = czkFilaSaveChat[key] || Promise.resolve();
+            const proxima = anterior.catch(() => {}).then(async () => {
+                let remoto = null, ok = false, ultimoErro = null;
+                for(let t = 0; t < 3 && !ok; t++) {
+                    try {
+                        const { data, error } = await czkSupabase.from('czk_data').select('value').eq('key', key);
+                        if(error) throw error;
+                        remoto = (data && data[0]) ? data[0].value : null; ok = true;
+                    } catch(e) { ultimoErro = e; await new Promise(res => setTimeout(res, 1500)); }
+                }
+                if(!ok) {
+                    console.warn('[Chat] não consegui ler o banco; NÃO gravei por cima para não perder conversas. Tente de novo.', key, ultimoErro);
+                    throw ultimoErro || new Error('Falha ao ler ' + key);
+                }
+                const mesclado = czkMesclarChat(key, remoto, value);
+                Object.keys(mesclado).forEach(k => { value[k] = mesclado[k]; });
+                const promessa = czkSaveBruto(key, value);
+                if(key === 'czk_chat_suporte') {
+                    try {
+                        if(adminLogado && typeof renderSuporteGeralAdmin === 'function') renderSuporteGeralAdmin();
+                        if(document.getElementById('modal-chat-suporte')?.style.display === 'flex') renderChatSuporte();
+                    } catch(e) {}
+                }
+                return promessa;
+            });
+            czkFilaSaveChat[key] = proxima;
+            return proxima;
+        }
+
+        function czkSaveBruto(key, value) {
             try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
             czkRemoteData[key] = value;
             // IMPORTANTE: devolve a Promise do Supabase (antes isso era "fire-and-forget" —
@@ -4464,48 +4543,6 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                 .catch(enviarOriginal);
         }
 
-        // LIMPEZA ÚNICA: recomprime as fotos que já estão salvas nos chats (suporte e entregadores) e move pro Storage
-        // (fica só o link no registro). Só mexe em foto acima de ~200 KB; nenhuma mensagem ou foto é apagada.
-        // Uso: abrir o painel admin, apertar F12 e rodar no Console:  czkLimparFotosAntigas()
-        async function czkLimparFotosAntigas() {
-            const MB = n => (n / 1048576).toFixed(2) + ' MB';
-            const recomprimir = dataUrl => new Promise(resolve => {
-                const img = new Image();
-                img.onload = () => {
-                    try {
-                        const esc = Math.min(1, 1280 / Math.max(img.width, img.height));
-                        const c = document.createElement('canvas');
-                        c.width = Math.round(img.width * esc); c.height = Math.round(img.height * esc);
-                        const ctx = c.getContext('2d');
-                        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
-                        ctx.drawImage(img, 0, 0, c.width, c.height);
-                        const out = c.toDataURL('image/jpeg', 0.82);
-                        resolve(out.length < dataUrl.length ? out : dataUrl);
-                    } catch(e) { resolve(dataUrl); }
-                };
-                img.onerror = () => resolve(dataUrl);
-                img.src = dataUrl;
-            });
-            const alvos = [['czk_chat_suporte', chatSuporte], ['czk_chat_entregadores', chatEntregadores]];
-            const antes = alvos.map(([, o]) => JSON.stringify(o || {}).length);
-            if(!confirm('Recomprimir as fotos antigas dos chats?\nTamanho atual: suporte ' + MB(antes[0]) + ' · entregadores ' + MB(antes[1]) + '\nNenhuma mensagem será apagada.')) return;
-            let total = 0;
-            for(const [chave, dados] of alvos) {
-                let mudou = false;
-                for(const conv in (dados || {})) {
-                    for(const m of (dados[conv] || [])) {
-                        if(m && typeof m.imagem === 'string' && m.imagem.indexOf('data:image') === 0 && m.imagem.length > 270000) {
-                            m.imagem = await czkFotoChatParaStorage(await recomprimir(m.imagem)); mudou = true; total++;
-                        }
-                    }
-                }
-                if(mudou) { try { await czkSave(chave, dados); } catch(e) { console.warn('Falha ao salvar', chave, e); alert('Não consegui salvar "' + chave + '": ' + (e && e.message)); } }
-            }
-            const depois = alvos.map(([, o]) => JSON.stringify(o || {}).length);
-            alert(total + ' foto(s) recomprimida(s).\nSuporte: ' + MB(antes[0]) + ' → ' + MB(depois[0]) + '\nEntregadores: ' + MB(antes[1]) + ' → ' + MB(depois[1]));
-            if(typeof renderSuporteGeralAdmin === 'function') renderSuporteGeralAdmin();
-        }
-
         // Abre a foto enviada no chat em tamanho grande (lightbox simples).
         function czkVerImagemChat(src) {
             const overlay = document.createElement("div");
@@ -4748,6 +4785,14 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
             document.getElementById("modal-suporte-cliente").style.display = "none";
         }
 
+        // Prévia da última mensagem na lista de conversas: foto não tem "texto", então mostra "📷 Foto"
+        // (antes, uma foto como última mensagem quebrava a lista e o Suporte do cliente não abria).
+        function czkPreviaMsgChat(m) {
+            if(!m) return '';
+            if(m.imagem) return '📷 Foto';
+            return String(m.texto || '').substring(0, 60);
+        }
+
         function renderListaSuporteCliente() {
             const container = document.getElementById("lista-suporte-cliente");
             if(!container) return;
@@ -4767,7 +4812,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                             <p class="text-sm font-bold text-blue-800">${formatarNumeroPedido(p)}</p>
                             <p class="text-xs text-red-400 font-semibold">Cancelado</p>
                         </div>
-                        <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Você: ') + ultima.texto.substring(0, 60) : 'Nenhuma mensagem ainda. Toque para conversar.'}</p>
+                        <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Você: ') + czkPreviaMsgChat(ultima) : 'Nenhuma mensagem ainda. Toque para conversar.'}</p>
                     </div>`;
                 }).join('');
                 return;
@@ -4791,7 +4836,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                     <div class="flex justify-between items-center">
                         <p class="text-sm font-bold text-blue-400">${meta.motivo}</p>
                     </div>
-                    <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Você: ') + ultima.texto.substring(0, 60) : ''}</p>
+                    <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Você: ') + czkPreviaMsgChat(ultima) : ''}</p>
                 </div>`;
             }).join('');
             container.innerHTML = htmlGeral + pedidos.map(p => {
@@ -4804,7 +4849,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                         <p class="text-sm font-bold text-blue-400">${formatarNumeroPedido(p)}</p>
                         <p class="text-xs ${statusColor} font-semibold">${statusLabel}</p>
                     </div>
-                    <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Você: ') + ultima.texto.substring(0, 60) : 'Nenhuma mensagem ainda. Toque para conversar.'}</p>
+                    <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Você: ') + czkPreviaMsgChat(ultima) : 'Nenhuma mensagem ainda. Toque para conversar.'}</p>
                 </div>`;
             }).join('');
         }
