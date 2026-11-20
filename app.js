@@ -4156,7 +4156,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
                         ${naoLidas > 0 ? `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${naoLidas}</span>` : `<span class="text-white/30 text-[10px]"><i class="fas fa-check-double"></i> lida</span>`}
                     </div>
                     <p class="text-xs text-yellow-400 font-semibold mt-0.5"><i class="fas fa-tag"></i> Motivo: ${meta ? meta.motivo : '—'}</p>
-                    <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Cliente: ') + ultima.texto.substring(0, 60) : ''}</p>
+                    <p class="text-xs text-white/60 mt-1">${ultima ? (ultima.de === 'loja' ? 'Loja: ' : 'Cliente: ') + (ultima.texto ? String(ultima.texto).substring(0, 60) : (ultima.imagem ? '📷 Foto' : '')) : ''}</p>
                 </div>`;
             }).join('');
             atualizarBolinhaSuporte();
