@@ -2345,8 +2345,11 @@
     <!-- Botão flutuante "Subir" — aparece ao rolar para baixo em qualquer tela/painel com scroll,
          e ao clicar volta suavemente para o topo de onde o usuário rolou. Não mexe em nenhuma
          outra função existente. -->
+    <!-- Avisos empilhados (canto inferior direito). Preenchido pelo app.js. -->
+    <div id="czk-avisos" aria-live="polite" style="display:none"><div class="tst" id="czk-avisos-pilha"></div></div>
+
     <button id="czk-btn-subir" onclick="czkVoltarAoTopo()" aria-label="Subir"
-        style="position:fixed; right:16px; bottom:90px; z-index:9999; width:46px; height:46px;
+        style="position:fixed; right:16px; bottom:200px; z-index:9999; width:46px; height:46px;
         border-radius:9999px; background:#1d4ed8; color:#fff; border:none; box-shadow:0 4px 14px rgba(0,0,0,.35);
         display:none; align-items:center; justify-content:center; cursor:pointer; font-size:18px;
         transition:opacity .2s ease;">
