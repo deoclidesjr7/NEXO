@@ -12781,3 +12781,110 @@ const czkVaiMostrarPromo = !clienteAtual
         } catch (e) { console.error('Avisos:', e); }
     };
 })();
+
+
+// =========================================================================
+//  SEEK — lupa que vira campo de busca (todas as buscas da aba Pedidos)
+//  Só envolve os inputs que já existem (mesmos ids e oninput): a lógica de busca
+//  não muda. Uma mola controla a largura; o resto deriva dela.
+// =========================================================================
+(function () {
+    var IDS = ['busca-pedidos-ativos', 'busca-cancelamentos', 'busca-suporte-geral', 'busca-balcao', 'busca-retirada', 'busca-finalizados'];
+    // Outras abas (cartão claro): claro = paleta clara, fill = ocupa a largura toda, fim = lupa encostada à direita, novo = cria o envoltório
+    var OUTRAS = [
+        { id: 'insumo-busca-input', claro: true, fill: true },
+        { id: 'receita-busca-input', claro: true, fill: true },
+        { id: 'estoque-relatorio-busca', claro: true, fill: true },
+        { id: 'busca-historico', claro: true },
+        { id: 'enviar-cupom-busca', claro: true, fill: true, fim: true, novo: true }
+    ];
+    var LENTE = '<svg class="sek-lens" viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M12.2 12.2 16 16"/></svg>';
+    function montar(input, cfg) {
+        cfg = cfg || {};
+        if (input.closest('.sek')) return;
+        var wrap = input.parentElement;
+        if (cfg.novo) { wrap = document.createElement('div'); input.parentNode.insertBefore(wrap, input); }
+        if (!wrap) return;
+        var icone = wrap.querySelector('.fa-search, .fa-magnifying-glass'); if (icone) icone.remove();
+        wrap.classList.remove('relative', 'w-full', 'sm:w-80');
+        wrap.classList.add('sek'); wrap.setAttribute('data-stroke', 'on');
+        if (cfg.claro) wrap.classList.add('sek-claro');
+        if (cfg.fill) wrap.classList.add('sek-fill');
+        if (cfg.fim) wrap.classList.add('sek-fim');
+        var skin = document.createElement('div'); skin.className = 'sek-skin';
+        skin.innerHTML = LENTE;
+        input.className = 'sek-field'; input.tabIndex = -1; input.setAttribute('autocomplete', 'off');
+        if (!input.getAttribute('aria-label')) input.setAttribute('aria-label', input.getAttribute('placeholder') || 'Buscar');
+        var hit = document.createElement('button'); hit.type = 'button'; hit.className = 'sek-hit';
+        hit.setAttribute('aria-label', 'Abrir busca'); hit.setAttribute('aria-expanded', 'false');
+        skin.appendChild(input); skin.appendChild(hit); wrap.appendChild(skin);
+        animar(wrap, skin, input, hit);
+    }
+    function animar(sek, skin, field, hit) {
+        var reduz = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var p = 0, v = 0, alvo = 0, raf = 0, ult = 0, busyT = 0;
+        function fechadoPx() { return parseFloat(getComputedStyle(sek).getPropertyValue('--shut')) || 40; }
+        function aberta() { return sek.getAttribute('data-open') === 'true'; }
+        function aplicar() {
+            var f = fechadoPx(), aberto = Math.max(f + 40, sek.clientWidth);
+            var w = f + (aberto - f) * Math.max(0, p);
+            var say = Math.min(1, Math.max(0, (p - 0.66) / 0.34));
+            sek.style.setProperty('--w', w.toFixed(2) + 'px');
+            sek.style.setProperty('--say', say.toFixed(3));
+        }
+        function passo(t) {
+            var dt = Math.min(0.032, (t - ult) / 1000 || 0.016); ult = t;
+            v += ((alvo - p) * 190 - v * 21) * dt; p += v * dt; aplicar();
+            if (Math.abs(alvo - p) < 0.0015 && Math.abs(v) < 0.004) { p = alvo; v = 0; aplicar(); raf = 0; return; }
+            raf = requestAnimationFrame(passo);
+        }
+        function mover(a) {
+            alvo = a;
+            if (reduz) { p = a; v = 0; aplicar(); return; }
+            if (!raf) { ult = performance.now(); raf = requestAnimationFrame(passo); }
+        }
+        function abrir() {
+            if (aberta()) return;
+            sek.setAttribute('data-press', 'true');
+            setTimeout(function () {
+                sek.removeAttribute('data-press');
+                sek.setAttribute('data-open', 'true'); field.tabIndex = 0; hit.setAttribute('aria-expanded', 'true');
+                mover(1); setTimeout(function () { field.focus(); }, reduz ? 0 : 120);
+            }, 90);
+        }
+        function fechar() {
+            if (!aberta()) return;
+            sek.setAttribute('data-open', 'false'); field.tabIndex = -1; hit.setAttribute('aria-expanded', 'false');
+            field.blur(); mover(0);
+        }
+        function avisarMudanca() { field.dispatchEvent(new Event('input', { bubbles: true })); } // roda o oninput original
+        hit.addEventListener('click', abrir);
+        skin.addEventListener('click', function () { if (aberta()) field.focus(); });
+        field.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { var tinha = !!field.value; field.value = ''; if (tinha) avisarMudanca(); fechar(); }
+        });
+        field.addEventListener('blur', function () { if (!field.value.trim()) fechar(); });
+        field.addEventListener('input', function () {
+            sek.setAttribute('data-busy', 'true'); clearTimeout(busyT);
+            busyT = setTimeout(function () { sek.removeAttribute('data-busy'); }, 600);
+        });
+        sek.addEventListener('pointermove', function (e) {
+            if (aberta() || reduz) return;
+            var r = skin.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+            sek.style.setProperty('--lx', Math.max(-5, Math.min(5, (e.clientX - cx) * 0.14)).toFixed(1) + 'px');
+            sek.style.setProperty('--ly', Math.max(-5, Math.min(5, (e.clientY - cy) * 0.14)).toFixed(1) + 'px');
+        });
+        sek.addEventListener('pointerleave', function () { sek.style.setProperty('--lx', '0px'); sek.style.setProperty('--ly', '0px'); });
+        window.addEventListener('resize', function () { if (aberta()) aplicar(); });
+        sek.style.setProperty('--w', fechadoPx() + 'px');
+        if (field.value.trim()) { sek.setAttribute('data-open', 'true'); field.tabIndex = 0; hit.setAttribute('aria-expanded', 'true'); p = alvo = 1; aplicar(); }
+    }
+    function iniciar() {
+        try {
+            IDS.forEach(function (id) { var el = document.getElementById(id); if (el) montar(el); });
+            OUTRAS.forEach(function (c) { var el = document.getElementById(c.id); if (el) montar(el, c); });
+        }
+        catch (e) { console.error('Seek:', e); }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
+})();
