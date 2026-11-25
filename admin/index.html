@@ -61,7 +61,7 @@
          o <noscript> abaixo garante que os ícones carreguem do mesmo jeito. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@400&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"></noscript>
     <!-- Leaflet (mapa) e Chart.js (gráficos) NÃO são mais carregados aqui no <head>.
@@ -71,6 +71,32 @@
     <!-- (html2canvas removido — não é mais usado; a exportação de imagem do relatório foi substituída por Excel/Word/texto) -->
     
     <link rel="stylesheet" href="../styles.css">
+    <!-- Loader animado da NEXO (usado dentro de #tela-carregamento-inicial). Fundo da tela é escuro, então as cores já são as versões claras. -->
+    <style>
+    #tela-carregamento-inicial .nx-box{display:none}
+    #tela-carregamento-inicial.nx-admin .nx-box{display:grid}
+    #tela-carregamento-inicial.nx-admin .czk-spin{display:none}
+    #tela-carregamento-inicial .nx-box{justify-items:center;gap:clamp(22px,5vw,34px);animation:nx-box 3.2s ease-in-out infinite}
+    #tela-carregamento-inicial .nx-mark{width:clamp(110px,30vw,150px);height:auto;overflow:visible;display:block}
+    #tela-carregamento-inicial .nx-mark path{fill:none;stroke-width:22;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+    #tela-carregamento-inicial .nx-mark .n{stroke:#eaf1ff;animation:nx-dn 3.2s linear infinite}
+    #tela-carregamento-inicial .nx-mark .a{stroke:#4d8dff;animation:nx-da 3.2s linear infinite}
+    #tela-carregamento-inicial .nx-mark .b{stroke:#4d8dff;animation:nx-db 3.2s linear infinite}
+    #tela-carregamento-inicial .nx-word{display:flex;gap:.65em;font:400 clamp(16px,4.2vw,22px)/1 "Montserrat",system-ui,sans-serif;letter-spacing:.65em;text-indent:.65em;color:#eaf1ff}
+    #tela-carregamento-inicial .nx-word span{opacity:0;transform:translateY(8px);animation:nx-letter 3.2s ease infinite}
+    #tela-carregamento-inicial .nx-word span:nth-child(2){animation-delay:.08s}
+    #tela-carregamento-inicial .nx-word span:nth-child(3){animation-delay:.16s}
+    #tela-carregamento-inicial .nx-word span:nth-child(4){animation-delay:.24s}
+    @keyframes nx-da{0%{stroke-dashoffset:1}6%,100%{stroke-dashoffset:0}}
+    @keyframes nx-dn{0%,6%{stroke-dashoffset:1}42%,100%{stroke-dashoffset:0}}
+    @keyframes nx-db{0%,42%{stroke-dashoffset:1}49%,100%{stroke-dashoffset:0}}
+    @keyframes nx-letter{0%,46%{opacity:0;transform:translateY(8px)}58%,100%{opacity:1;transform:none}}
+    @keyframes nx-box{0%,86%{opacity:1}97%,100%{opacity:0}}
+    @media (prefers-reduced-motion:reduce){
+      #tela-carregamento-inicial .nx-box,#tela-carregamento-inicial .nx-mark path,#tela-carregamento-inicial .nx-word span{animation:none!important}
+      #tela-carregamento-inicial .nx-mark path{stroke-dashoffset:0}#tela-carregamento-inicial .nx-word span{opacity:1;transform:none}
+    }
+    </style>
 </head>
 <body>
     <!-- ===== Adaptador de telas: envolve todo o app para exibir corretamente em celular e computador ===== -->
@@ -89,8 +115,26 @@
          Num aparelho que já tem cache local, ela nem chega a aparecer de verdade (some quase
          instantaneamente, junto com a marca certa sendo aplicada). -->
     <div id="tela-carregamento-inicial" style="position:fixed;inset:0;z-index:60;background:#101a2c;display:flex;align-items:center;justify-content:center;transition:opacity .25s ease;">
-        <i class="fas fa-circle-notch fa-spin" style="font-size:2.2rem;color:rgba(255,255,255,0.35);"></i>
+        <i class="fas fa-circle-notch fa-spin czk-spin" style="font-size:2.2rem;color:rgba(255,255,255,0.35);"></i>
+        <div class="nx-box" role="status" aria-label="Carregando">
+            <svg class="nx-mark" viewBox="0 0 560 470" aria-hidden="true">
+                <path class="a" pathLength="1" d="M338 170 L471 25"/>
+                <path class="n" pathLength="1" d="M471 25 Q485 16 501 18 Q540 21 540 65 L540 400 Q540 431 508 431 Q492 431 481 419 L138 55 Q112 18 75 18 Q19 18 19 65 L19 395 Q19 451 68 450"/>
+                <path class="b" pathLength="1" d="M68 450 Q84 450 98 434 L253 263"/>
+            </svg>
+            <div class="nx-word" aria-hidden="true"><span>N</span><span>E</span><span>X</span><span>O</span></div>
+        </div>
     </div>
+    <script>
+    /* Só o painel /admin mostra a logo da NEXO; o cardápio dos clientes mantém a tela neutra (multi-tenant). */
+    (function(){
+        try{
+            if(window.location.pathname.replace(/\/+$/,'').endsWith('/admin')){
+                document.getElementById('tela-carregamento-inicial').classList.add('nx-admin');
+            }
+        }catch(e){}
+    })();
+    </script>
     <!-- Selo fixo de "modo mesa": só aparece quando o cardápio foi aberto pelo QR Code de uma mesa (?mesa=NUMERO) -->
     <div id="selo-modo-mesa" class="hidden fixed top-14 left-1/2 -translate-x-1/2 z-[80] bg-[#16233d] text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border border-white/20"><i class="fas fa-utensils text-amber-400"></i> <span></span></div>
 
