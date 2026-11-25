@@ -451,6 +451,7 @@
                     const idsAntigos = new Set(historicoPedidos.map(p => p.id));
                     const pendentesAntigos = new Set(historicoPedidos.filter(p => p.cancelamentoPendente).map(p => p.id));
                     const statusAntigosMesa = new Map(historicoPedidos.filter(p => p.tipoEntrega === 'mesa').map(p => [p.id, p.status]));
+                    const statusAntigosGeral = new Map(historicoPedidos.map(p => [p.id, p.status])); // avisos empilhados
                     const pedidosRecebidos = value || [];
                     const novosPedidos = pedidosRecebidos.filter(p => !idsAntigos.has(p.id));
                     const novosCancelamentos = pedidosRecebidos.filter(p => p.cancelamentoPendente && !pendentesAntigos.has(p.id));
@@ -458,6 +459,7 @@
                     // é o gatilho do alerta sonoro/visual pro garçom saber que pode ir buscar/servir.
                     const novosProntosMesa = pedidosRecebidos.filter(p => p.tipoEntrega === 'mesa' && p.status === 'Pedido finalizado' && !p.servidoEm && statusAntigosMesa.get(p.id) !== 'Pedido finalizado');
                     historicoPedidos = pedidosRecebidos;
+                    if(adminLogado && typeof czkAvisosProcessar === 'function') czkAvisosProcessar(novosPedidos, novosCancelamentos, novosProntosMesa, pedidosRecebidos, statusAntigosGeral);
                     // BLOQUEADOR: essas atualizações só servem pra quem está de fato dentro do
                     // Admin/Entregador/Cozinha. Um cliente comum olhando o cardápio nunca vê essas
                     // telas — então não faz sentido reprocessar tudo isso no aparelho dele toda vez
@@ -3716,6 +3718,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
         }
 
         function renderPedidosAtivos() {
+            if(typeof czkAvisosLimpar === 'function') czkAvisosLimpar();
             const termoBusca = (document.getElementById("busca-pedidos-ativos")?.value || "").trim().toLowerCase();
             const bateComBusca = (p) => {
                 if(!termoBusca) return true;
@@ -4113,6 +4116,7 @@ ${esgotado ? '' : `<div class="badge-destaque-3d"><span class="fire-icon fire-3d
 
         // Lista das solicitações pendentes e do histórico de pedidos cancelados, na aba "Cancelamentos" do admin.
         function renderCancelamentosAdmin() {
+            if(typeof czkAvisosLimpar === 'function') czkAvisosLimpar();
             const pendentesContainer = document.getElementById("lista-cancelamentos-pendentes");
             const canceladosContainer = document.getElementById("lista-pedidos-cancelados");
             if(!pendentesContainer || !canceladosContainer) return;
@@ -12657,3 +12661,123 @@ const czkVaiMostrarPromo = !clienteAtual
             };
         })();
     
+
+
+// =========================================================================
+//  AVISOS EMPILHADOS (canto inferior direito do painel)
+//  Pedido novo e cancelamento ficam até o "X" (ou até o pedido ser aceito/tratado).
+//  Mesa pronta e entrega finalizada somem sozinhas em 8s. Suporte NÃO entra aqui
+//  (já tem o ícone flutuante). Máximo de 12 avisos na fila; 3 visíveis na pilha.
+// =========================================================================
+(function () {
+    var SHOWN = 3, H = 50, GAP = 10, PEEK = 14, MAX = 12, AUTO_MS = 8000;
+    var fila = [];
+    var ICONES = {
+        success: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>',
+        warning: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17v.01"/></svg>',
+        info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></svg>'
+    };
+    function pilha() { return document.getElementById('czk-avisos-pilha'); }
+    function area() { return document.getElementById('czk-avisos'); }
+    function painelAberto() { var ap = document.getElementById('admin-panel'); return !!ap && ap.style.display === 'block'; }
+    function atualizarVisibilidade() {
+        var ar = area(); if (!ar) return;
+        ar.style.display = (painelAberto() && fila.length) ? '' : 'none';
+    }
+    function pos() {
+        var p = pilha(); if (!p) return;
+        var ab = p.hasAttribute('data-open'), vis = Math.min(fila.length, SHOWN);
+        fila.forEach(function (it, k) {
+            var el = it.el, oc = k >= SHOWN;
+            var y = ab ? -k * (H + GAP) : -k * PEEK, s = ab ? 1 : 1 - k * 0.05;
+            if (oc) { y = ab ? -(SHOWN - 1) * (H + GAP) : -(SHOWN - 1) * PEEK; s = ab ? 1 : 1 - (SHOWN - 1) * 0.05; }
+            el.style.zIndex = String(100 - k);
+            el.style.transform = 'translateY(' + y + 'px) scale(' + s + ')';
+            el.style.opacity = oc ? '0' : '1';
+            el.style.pointerEvents = (oc || (!ab && k > 0)) ? 'none' : 'auto';
+            if (k === 0) el.setAttribute('data-front', ''); else el.removeAttribute('data-front');
+        });
+        p.style.height = (!fila.length ? 0 : ab ? vis * H + (vis - 1) * GAP : H + (vis - 1) * PEEK) + 'px';
+        atualizarVisibilidade();
+    }
+    function tirar(it) {
+        var i = fila.indexOf(it); if (i < 0) return;
+        fila.splice(i, 1);
+        if (it.timer) clearTimeout(it.timer);
+        it.el.style.opacity = '0';
+        it.el.style.transform += ' translateX(24px)';
+        setTimeout(function () { if (it.el.parentNode) it.el.parentNode.removeChild(it.el); }, 260);
+        pos();
+    }
+    function adicionar(tipo, titulo, desc, chave, autoMs) {
+        var p = pilha(); if (!p) return;
+        if (chave && fila.some(function (it) { return it.chave === chave; })) return;
+        var el = document.createElement('div');
+        el.className = 'tst-toast'; el.setAttribute('data-kind', tipo);
+        el.innerHTML = '<span class="tst-icon">' + (ICONES[tipo] || ICONES.info) + '</span><div class="tst-text"><b></b><span></span></div>' +
+            '<button class="tst-x" type="button" aria-label="Fechar aviso"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>';
+        el.querySelector('b').textContent = titulo;
+        el.querySelector('.tst-text span').textContent = desc || '';
+        var it = { el: el, chave: chave || null, timer: null, auto: false };
+        el.querySelector('.tst-x').addEventListener('click', function () { tirar(it); });
+        el.style.opacity = '0'; el.style.transform = 'translateY(18px) scale(.96)';
+        p.appendChild(el); fila.unshift(it);
+        if (autoMs) { it.auto = true; it.timer = setTimeout(function () { tirar(it); }, autoMs); }
+        while (fila.length > MAX) {
+            var alvo = null;
+            for (var j = fila.length - 1; j >= 0; j--) { if (fila[j].auto) { alvo = fila[j]; break; } }
+            tirar(alvo || fila[fila.length - 1]);
+        }
+        atualizarVisibilidade();
+        requestAnimationFrame(function () { requestAnimationFrame(pos); });
+    }
+    function abrir() { var p = pilha(); if (p) { p.setAttribute('data-open', ''); pos(); } }
+    function fechar() { var p = pilha(); if (p) { p.removeAttribute('data-open'); pos(); } }
+    document.addEventListener('DOMContentLoaded', function () {
+        var p = pilha(); if (!p) return;
+        p.addEventListener('mouseenter', abrir);
+        p.addEventListener('mouseleave', fechar);
+        p.addEventListener('focusin', abrir);
+        p.addEventListener('focusout', function (e) { if (!p.contains(e.relatedTarget)) fechar(); });
+    });
+    function dinheiro(v) { return 'R$ ' + (Number(v) || 0).toFixed(2).replace('.', ','); }
+    function tipoTxt(p) { return p.tipoEntrega === 'mesa' ? 'Mesa' : (p.tipoEntrega === 'retirada' ? 'Retirada' : 'Delivery'); }
+
+    window.czkAvisosProcessar = function (novos, cancels, prontosMesa, todos, antes) {
+        try {
+            if (!painelAberto()) return;
+            (novos || []).forEach(function (p) {
+                adicionar('success', 'Novo pedido ' + formatarNumeroPedido(p),
+                    tipoTxt(p) + ' · ' + dinheiro(p.total) + (p.metodo ? ' · ' + p.metodo : ''), 'novo-' + p.id, 0);
+            });
+            (cancels || []).forEach(function (p) {
+                adicionar('warning', 'Cancelamento pedido ' + formatarNumeroPedido(p),
+                    (p.clienteNome || 'Cliente') + ' · 5 min para contato', 'canc-' + p.id, 0);
+            });
+            (prontosMesa || []).forEach(function (p) {
+                adicionar('success', nomeMesa(p.numeroMesa) + ' · itens prontos',
+                    'Pedido ' + formatarNumeroPedido(p) + ' pronto para servir', 'mesa-' + p.id, AUTO_MS);
+            });
+            (todos || []).forEach(function (p) {
+                var ant = antes && antes.get(p.id);
+                if (p.status === 'Entrega finalizada' && ant !== undefined && ant !== p.status) {
+                    adicionar('success', 'Entrega finalizada ' + formatarNumeroPedido(p),
+                        (p.clienteNome || 'Cliente') + ' · ' + dinheiro(p.total), 'ent-' + p.id, AUTO_MS);
+                }
+            });
+            czkAvisosLimpar();
+        } catch (e) { console.error('Avisos:', e); }
+    };
+
+    window.czkAvisosLimpar = function () {
+        try {
+            fila.slice().forEach(function (it) {
+                var m = it.chave && /^(novo|canc)-(.+)$/.exec(it.chave); if (!m) return;
+                var p = historicoPedidos.find(function (x) { return String(x.id) === m[2]; });
+                if (m[1] === 'novo' && (!p || p.status !== 'Em preparo')) tirar(it);
+                else if (m[1] === 'canc' && (!p || !p.cancelamentoPendente || p.status === 'Cancelado')) tirar(it);
+            });
+            atualizarVisibilidade();
+        } catch (e) { console.error('Avisos:', e); }
+    };
+})();
