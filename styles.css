@@ -1829,3 +1829,65 @@ body.modo-painel-noite .czk-btn-sair-admin:hover { background: rgba(255,255,255,
 #czk-avisos .tst-x:hover { background:var(--tst-wash); color:#17181a !important; }
 #czk-avisos .tst-x:focus-visible { outline:none; box-shadow:0 0 0 2px var(--signal); }
 @media (prefers-reduced-motion:reduce) { #czk-avisos .tst, #czk-avisos .tst-toast { transition-duration:1ms !important; } }
+
+/* =========================================================================
+   SEEK — lupa que vira campo de busca (todas as buscas da aba Pedidos)
+   O app.js envolve os inputs existentes (mesmos ids e oninput) com esta estrutura.
+   Cores vêm das variáveis --tk-* (modo noite e dia seguem automático).
+   ========================================================================= */
+.sek {
+    --pane:var(--tk-input,#070d19); --pane-edge:var(--tk-line2,rgba(120,165,255,.32));
+    --ink:var(--tk-fg,#e8eefb); --ink-2:var(--tk-fg,#e8eefb); --ink-3:var(--tk-dim,#93a3bf);
+    --ink-4:var(--tk-dim,#93a3bf); --ink-5:var(--tk-dim,#93a3bf); --bg:var(--tk-bg,#060a13);
+    --shut:40px; --lens:18px; --inset:11px; --frame:min(320px,100%); --frameh:40px;
+    --w:40px; --say:0; --lx:0px; --ly:0px;
+    position:relative; display:grid; place-items:center; justify-items:end;
+    width:var(--frame); height:var(--frameh); font-family:var(--tk-head, inherit);
+}
+#subtab-suporte-conteudo .sek { justify-items:start; }
+#admin-panel.czk-pedidos-tela-cheia .sek { --shut:34px; --frameh:34px; --inset:8px; --w:34px; }
+.sek-skin {
+    position:relative; width:var(--w); height:var(--shut); border-radius:999px; background:var(--pane);
+    isolation:isolate; overflow:hidden; transform:translate(var(--lx),var(--ly)) scale(var(--sk,1));
+    transition:transform 220ms cubic-bezier(.22,1,.36,1), background 220ms ease;
+}
+.sek-skin::before { content:""; position:absolute; inset:0; border-radius:inherit; border:1px solid var(--pane-edge); pointer-events:none; z-index:2; transition:border-color 160ms ease; }
+.sek:focus-within .sek-skin::before { border-color:var(--tk-accent,#22d3ee); }
+.sek:not([data-open="true"]) .sek-skin:hover { --sk:1.045; }
+.sek:not([data-open="true"]) .sek-skin:active,
+.sek:not([data-open="true"])[data-press="true"] .sek-skin { --sk:.93; transition:transform 160ms cubic-bezier(.22,1,.36,1); }
+.sek[data-open="true"] .sek-skin { cursor:text; }
+.sek-lens { position:absolute; left:var(--inset); top:50%; width:var(--lens); height:var(--lens); margin-top:calc(var(--lens) / -2);
+    fill:none; stroke:var(--ink-3); stroke-width:1.5; stroke-linecap:round; pointer-events:none; transition:stroke 220ms ease, stroke-width 220ms ease; }
+.sek-skin:hover .sek-lens { stroke:var(--ink); }
+.sek[data-open="true"] .sek-lens { stroke:var(--ink-4); }
+.sek[data-busy="true"] .sek-lens { stroke:var(--ink-2); stroke-width:1.8; }
+.sek-field { position:absolute; left:calc(var(--inset) + var(--lens) + 11px); right:14px; top:0; height:100%; margin:0;
+    outline:none; font:inherit; font-size:14px; letter-spacing:-.01em; text-overflow:ellipsis;
+    opacity:var(--say); transform:translateX(calc((1 - var(--say)) * -6px)); pointer-events:var(--say-hit,none); }
+.sek[data-open="true"] .sek-field { --say-hit:auto; }
+.sek-field::placeholder { color:var(--ink-5); }
+.sek-hit { position:absolute; inset:0; border:0; border-radius:inherit; background:none; cursor:pointer; padding:0; z-index:3; }
+.sek[data-open="true"] .sek-hit { pointer-events:none; }
+.sek-hit:focus-visible { outline:none; box-shadow:0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--ink) 40%, transparent); }
+/* neutraliza o visual antigo dos inputs (sobrescreve as regras com !important já existentes) */
+#admin-panel:has(#pedidos-ativos.active) .sek :is(#busca-pedidos-ativos,#busca-cancelamentos,#busca-suporte-geral,#busca-balcao,#busca-retirada,#busca-finalizados),
+#admin-panel:has(#pedidos-ativos.active) .sek :is(#busca-pedidos-ativos,#busca-cancelamentos,#busca-suporte-geral,#busca-balcao,#busca-retirada,#busca-finalizados):focus {
+    background:none !important; border:0 !important; box-shadow:none !important; border-radius:0 !important;
+    padding:0 !important; width:auto !important; color:var(--ink) !important; font-size:14px !important;
+}
+@media (prefers-reduced-motion:reduce) { .sek-skin, .sek-lens, .sek-skin::before { transition-duration:1ms !important; } }
+
+/* Seek nas outras abas (Estoque, Histórico, Enviar cupom): cartão claro */
+.sek.sek-fill { --frame:100%; flex:1 1 0%; min-width:0; }
+.sek.sek-fim { justify-items:end; }
+.sek.sek-claro {
+    --pane:#fffdf6; --pane-edge:#d9cca0; --ink:#16233d; --ink-2:#16233d; --ink-3:#5b6b86;
+    --ink-4:#5b6b86; --ink-5:#8a96ab; --bg:#fffdf6;
+}
+.sek.sek-claro:focus-within .sek-skin::before { border-color:#16233d; }
+#admin-panel .sek.sek-claro .sek-field,
+#admin-panel .sek.sek-claro .sek-field:focus {
+    background:none !important; border:0 !important; box-shadow:none !important; border-radius:0 !important;
+    padding:0 !important; width:auto !important; color:#16233d !important; font-size:14px !important;
+}
